@@ -80,6 +80,51 @@ Example with arguments: \`(el) => {
   },
 });
 
+export const evaluateScriptToFile = defineTool({
+  name: 'evaluate_script_to_file',
+  description: `Evaluate a JavaScript function inside the currently selected page and write the string result to a local file. Use this for large data (canvas fingerprints, base64 images, etc.) that exceeds the MCP response size limit.`,
+  annotations: {
+    category: ToolCategory.DEBUGGING,
+    readOnlyHint: false,
+  },
+  schema: {
+    function: zod.string().describe(
+      `A JavaScript function declaration that returns a string. Example: \`() => { return document.querySelector('canvas').toDataURL(); }\``,
+    ),
+    filePath: zod.string().describe(
+      `Absolute path to write the result to. Example: /tmp/canvas_fingerprint.txt`,
+    ),
+  },
+  handler: async (request, response, context) => {
+    let fn: JSHandle<unknown> | undefined;
+    try {
+      const frame = context.getSelectedFrame();
+      fn = await withTimeout(
+        frame.evaluateHandle(`(${request.params.function})`),
+        DEFAULT_SCRIPT_TIMEOUT,
+        'Script evaluation timed out',
+      );
+      const result = await withTimeout(
+        frame.evaluate(async fn => {
+          // @ts-expect-error no types.
+          const val = await fn();
+          return String(val);
+        }, fn),
+        DEFAULT_SCRIPT_TIMEOUT,
+        'Script execution timed out',
+      );
+      // Write to local file, bypassing MCP response size limit
+      const bytes = new TextEncoder().encode(result);
+      const saved = await context.saveFile(bytes, request.params.filePath);
+      response.appendResponseLine(`Written ${bytes.length} bytes to ${saved.filename}`);
+    } finally {
+      if (fn) {
+        void fn.dispose();
+      }
+    }
+  },
+});
+
 export const injectPreloadScript = defineTool({
   name: 'inject_preload_script',
   description:

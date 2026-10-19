@@ -15,30 +15,36 @@ npm run build
 build/src/index.js
 ```
 
-## 2. 最简单启动方式
+## 2. 先启动可接管的 Chrome
 
-如果你只是想先确认 MCP 服务可以工作，可以直接启动：
+本项目不再自动拉起浏览器：未指定连接目标时服务会直接报错退出。
+
+先启动一个带远程调试端口的 Chrome：
 
 ```bash
-npm run start
+# macOS
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/chrome-mcp
 ```
 
-这种方式适合：
+启动服务时显式指定连接目标：
 
-- 先验证 MCP 服务能不能正常启动
-- 先熟悉工具列表
-- 暂时不需要复用已登录浏览器
+```bash
+npm run start -- --browserUrl http://127.0.0.1:9222
+```
 
 ## 3. 选择浏览器连接方式
 
-常见有两种：
+常见有三种：
 
-- 方式 A：让 MCP 自己管理浏览器
-  - 最简单，适合首次试用
-- 方式 B：接管你已经打开的 Chrome
-  - 适合需要复用登录态、验证码、人机校验场景
+- 方式 A：`--browserUrl` 连接本机调试端口（最常用）
+- 方式 B：`--wsEndpoint` 连接已知 WebSocket 地址
+- 方式 C：`--autoConnect` 自动探测常见调试端口
 
-如果你想接管已打开的浏览器，请看：
+如果你需要复用登录态、验证码、人机校验现场，直接用你已经打开的 Chrome 即可，只要它以 `--remote-debugging-port` 启动。
+
+详细步骤请看：
 
 - `docs/guides/browser-connection.md`
 

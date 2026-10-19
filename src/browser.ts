@@ -268,6 +268,14 @@ export class BrowserManager {
         throw new Error('BrowserManager must be initialized with config on first call');
       }
       browserManager = new BrowserManager(config);
+    } else if (
+      config &&
+      (config.browserURL !== browserManager.config.browserURL ||
+        config.wsEndpoint !== browserManager.config.wsEndpoint)
+    ) {
+      // 连接目标变了（例如旧浏览器退出、端口被新实例接管）：丢弃过期单例，重新绑定
+      void browserManager.close().catch(() => {});
+      browserManager = new BrowserManager(config);
     }
     return browserManager;
   }

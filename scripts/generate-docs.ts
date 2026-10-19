@@ -21,8 +21,11 @@ import * as jshookHookTools from '../build/src/tools/hook.js';
 import * as jshookStealthTools from '../build/src/tools/stealth.js';
 import * as jshookDomTools from '../build/src/tools/dom.js';
 import * as jshookPageTools from '../build/src/tools/page.js';
+import * as wasmTools from '../build/src/tools/wasm.js';
+import * as rebuildTools from '../build/src/tools/rebuild.js';
+import * as framesTools from '../build/src/tools/frames.js';
 
-const OUTPUT_PATH = './docs/tool-reference.md';
+const OUTPUT_PATH = './docs/reference/tool-reference.md';
 const README_PATH = './README.md';
 
 type ToolDef = {
@@ -47,6 +50,9 @@ function allTools(): ToolDef[] {
     ...Object.values(jshookStealthTools),
     ...Object.values(jshookDomTools),
     ...Object.values(jshookPageTools),
+    ...Object.values(wasmTools),
+    ...Object.values(rebuildTools),
+    ...Object.values(framesTools),
   ] as ToolDef[];
 }
 
@@ -85,7 +91,11 @@ function generateConfigOptionsMarkdown(): string {
   return markdown.trim();
 }
 
-function updateReadmeBlock(beginMarker: string, endMarker: string, content: string): void {
+function updateReadmeBlock(
+  beginMarker: string,
+  endMarker: string,
+  content: string,
+): void {
   const readmeContent = fs.readFileSync(README_PATH, 'utf8');
   const beginIndex = readmeContent.indexOf(beginMarker);
   const endIndex = readmeContent.indexOf(endMarker);
@@ -101,7 +111,9 @@ function updateReadmeBlock(beginMarker: string, endMarker: string, content: stri
 }
 
 function generateDocs(): void {
-  const tools = uniqueToolsByName(allTools()).sort((a, b) => a.name.localeCompare(b.name));
+  const tools = uniqueToolsByName(allTools()).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
   const categories = new Map<string, ToolDef[]>();
 
   for (const tool of tools) {
@@ -111,7 +123,7 @@ function generateDocs(): void {
   }
 
   const categoryOrder = Object.values(ToolCategory);
-  let markdown = `<!-- AUTO GENERATED DO NOT EDIT - run 'npm run docs' to update-->\n\n# Chrome DevTools MCP Tool Reference\n\n> 快速按逆向目标查工具，请先看：[\`docs/reverse-task-index.md\`](./reverse-task-index.md)\n\n`;
+  let markdown = `<!-- AUTO GENERATED DO NOT EDIT - run 'npm run docs' to update-->\n\n# Chrome DevTools MCP Tool Reference\n\n> 快速按逆向目标查工具，请先看：[\`docs/reference/reverse-task-index.md\`](./reverse-task-index.md)\n\n`;
 
   for (const category of categoryOrder) {
     const toolsInCategory = categories.get(category) || [];
@@ -148,15 +160,23 @@ function generateDocs(): void {
 
   const toolsTOC = Array.from(categories.entries())
     .map(([category, categoryTools]) => {
-      const lines = [`- **${labels[category as ToolCategory]}** (${categoryTools.length} tools)`];
+      const lines = [
+        `- **${labels[category as ToolCategory]}** (${categoryTools.length} tools)`,
+      ];
       for (const tool of categoryTools) {
-        lines.push(`  - [\`${tool.name}\`](docs/tool-reference.md#${tool.name.toLowerCase()})`);
+        lines.push(
+          `  - [\`${tool.name}\`](docs/reference/tool-reference.md#${tool.name.toLowerCase()})`,
+        );
       }
       return lines.join('\n');
     })
     .join('\n');
 
-  updateReadmeBlock('<!-- BEGIN AUTO GENERATED TOOLS -->', '<!-- END AUTO GENERATED TOOLS -->', toolsTOC);
+  updateReadmeBlock(
+    '<!-- BEGIN AUTO GENERATED TOOLS -->',
+    '<!-- END AUTO GENERATED TOOLS -->',
+    toolsTOC,
+  );
   updateReadmeBlock(
     '<!-- BEGIN AUTO GENERATED OPTIONS -->',
     '<!-- END AUTO GENERATED OPTIONS -->',

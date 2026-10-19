@@ -30,21 +30,30 @@
   - [`get_websocket_messages`](#get_websocket_messages)
   - [`list_network_requests`](#list_network_requests)
   - [`list_websocket_connections`](#list_websocket_connections)
-- **[Debugging](#debugging)** (5 tools)
+- **[Debugging](#debugging)** (8 tools)
   - [`evaluate_script`](#evaluate_script)
+  - [`evaluate_script_to_file`](#evaluate_script_to_file)
   - [`get_console_message`](#get_console_message)
   - [`inject_preload_script`](#inject_preload_script)
   - [`list_console_messages`](#list_console_messages)
+  - [`list_frames`](#list_frames)
+  - [`select_frame`](#select_frame)
   - [`take_screenshot`](#take_screenshot)
-- **[JS Reverse Engineering](#js-reverse-engineering)** (45 tools)
+- **[JS Reverse Engineering](#js-reverse-engineering)** (54 tools)
   - [`analyze_target`](#analyze_target)
+  - [`analyze_wasm_module`](#analyze_wasm_module)
+  - [`analyze_wasm_signature_diff`](#analyze_wasm_signature_diff)
   - [`break_on_xhr`](#break_on_xhr)
   - [`collect_code`](#collect_code)
+  - [`collect_wasm`](#collect_wasm)
   - [`collection_diff`](#collection_diff)
   - [`create_hook`](#create_hook)
+  - [`decompile_wasm_module`](#decompile_wasm_module)
   - [`deobfuscate_code`](#deobfuscate_code)
   - [`detect_crypto`](#detect_crypto)
+  - [`diff_env_requirements`](#diff_env_requirements)
   - [`evaluate_on_callframe`](#evaluate_on_callframe)
+  - [`export_rebuild_bundle`](#export_rebuild_bundle)
   - [`export_session_report`](#export_session_report)
   - [`find_in_script`](#find_in_script)
   - [`get_hook_data`](#get_hook_data)
@@ -56,11 +65,13 @@
   - [`inject_hook`](#inject_hook)
   - [`inject_stealth`](#inject_stealth)
   - [`inspect_object`](#inspect_object)
+  - [`inspect_wasm_exports`](#inspect_wasm_exports)
   - [`list_breakpoints`](#list_breakpoints)
   - [`list_hooks`](#list_hooks)
   - [`list_scripts`](#list_scripts)
   - [`list_stealth_features`](#list_stealth_features)
   - [`list_stealth_presets`](#list_stealth_presets)
+  - [`list_wasm_modules`](#list_wasm_modules)
   - [`monitor_events`](#monitor_events)
   - [`pause`](#pause)
   - [`record_reverse_evidence`](#record_reverse_evidence)
@@ -79,6 +90,7 @@
   - [`step_over`](#step_over)
   - [`stop_monitor`](#stop_monitor)
   - [`summarize_code`](#summarize_code)
+  - [`summarize_wasm_boundary`](#summarize_wasm_boundary)
   - [`trace_function`](#trace_function)
   - [`understand_code`](#understand_code)
   - [`unhook_function`](#unhook_function)
@@ -308,6 +320,15 @@ so returned values have to JSON-serializable.
 
 - `function`
 
+### `evaluate_script_to_file`
+
+**Description:** Evaluate a JavaScript function inside the currently selected page and write the string result to a local file. Use this for large data (canvas fingerprints, base64 images, etc.) that exceeds the MCP response size limit.
+
+**Parameters:**
+
+- `function`
+- `filePath`
+
 ### `get_console_message`
 
 **Description:** Gets a console message by its ID. You can get all messages by calling list_console_messages.
@@ -334,6 +355,18 @@ so returned values have to JSON-serializable.
 - `pageIdx`
 - `types`
 - `includePreservedMessages`
+
+### `list_frames`
+
+**Description:** Lists all frames (including iframes) in the current page as a tree. Shows frame index, name, and URL. Use select_frame to switch execution context to a specific frame.
+
+### `select_frame`
+
+**Description:** Selects a frame (by index from list_frames) as the execution context for evaluate_script, hook_function, inspect_object, and other tools that run JavaScript in the page.
+
+**Parameters:**
+
+- `frameIdx`
 
 ### `take_screenshot`
 
@@ -367,6 +400,32 @@ so returned values have to JSON-serializable.
 - `autoReplayActions`
 - `collect`
 
+### `analyze_wasm_module`
+
+**Description:** Analyze one Wasm module by session module ID, base64 payload, or artifact path.
+
+**Parameters:**
+
+- `moduleId`
+- `base64`
+- `artifactPath`
+- `includeFunctionSignatures`
+- `includeRawSectionMap`
+- `includeStringScan`
+- `maskSensitiveStrings`
+- `maxStringSlots`
+- `maxSummaryLines`
+
+### `analyze_wasm_signature_diff`
+
+**Description:** Compare captured JS-Wasm boundary chains to highlight which query/body/header inputs vary like signature material.
+
+**Parameters:**
+
+- `moduleId`
+- `exportName`
+- `maxChains`
+
 ### `break_on_xhr`
 
 **Description:** Sets a breakpoint that triggers when an XHR/Fetch request URL contains the specified string.
@@ -393,6 +452,25 @@ so returned values have to JSON-serializable.
 - `limit`
 - `topN`
 
+### `collect_wasm`
+
+**Description:** Collect Wasm modules from network responses and runtime instantiation hooks.
+
+**Parameters:**
+
+- `url`
+- `timeout`
+- `waitAfterLoadMs`
+- `includeRuntimeEvents`
+- `includeImports`
+- `includeExports`
+- `maxModules`
+- `captureBase64`
+- `taskId`
+- `taskSlug`
+- `targetUrl`
+- `goal`
+
 ### `collection_diff`
 
 **Description:** Compare previous and current collected file summaries.
@@ -414,6 +492,19 @@ so returned values have to JSON-serializable.
 - `description`
 - `action`
 
+### `decompile_wasm_module`
+
+**Description:** Disassemble a Wasm module to WAT using wabt/wasm2wat and summarize function-level behavior.
+
+**Parameters:**
+
+- `moduleId`
+- `base64`
+- `artifactPath`
+- `maxWatChars`
+- `foldExprs`
+- `inlineExport`
+
 ### `deobfuscate_code`
 
 **Description:** AI-assisted JavaScript deobfuscation.
@@ -433,6 +524,15 @@ so returned values have to JSON-serializable.
 - `code`
 - `useAI`
 
+### `diff_env_requirements`
+
+**Description:** Compare local runtime failures with observed browser capabilities and suggest the next environment patches.
+
+**Parameters:**
+
+- `runtimeError`
+- `observedCapabilities`
+
 ### `evaluate_on_callframe`
 
 **Description:** Evaluates a JavaScript expression in the context of a specific call frame while paused. This allows you to inspect variables and execute code in the paused scope.
@@ -441,6 +541,28 @@ so returned values have to JSON-serializable.
 
 - `expression`
 - `frameIndex`
+
+### `export_rebuild_bundle`
+
+**Description:** Export a local Node rebuild bundle from observed reverse-engineering evidence.
+
+**Parameters:**
+
+- `taskId`
+- `taskSlug`
+- `targetUrl`
+- `goal`
+- `autoGenerate`
+- `targetKeywords`
+- `targetUrlPatterns`
+- `targetFunctionNames`
+- `targetActionDescription`
+- `maxEvidenceItems`
+- `entryCode`
+- `envCode`
+- `polyfillsCode`
+- `capture`
+- `notes`
 
 ### `export_session_report`
 
@@ -554,6 +676,14 @@ so returned values have to JSON-serializable.
 - `showMethods`
 - `showPrototype`
 
+### `inspect_wasm_exports`
+
+**Description:** Summarize Wasm export usage and likely high-value entry points.
+
+**Parameters:**
+
+- `moduleId`
+
 ### `list_breakpoints`
 
 **Description:** Lists all active breakpoints in the current debugging session.
@@ -577,6 +707,15 @@ so returned values have to JSON-serializable.
 ### `list_stealth_presets`
 
 **Description:** List available stealth presets.
+
+### `list_wasm_modules`
+
+**Description:** List Wasm modules captured in the current session.
+
+**Parameters:**
+
+- `includeImports`
+- `includeExports`
 
 ### `monitor_events`
 
@@ -738,6 +877,15 @@ so returned values have to JSON-serializable.
 - `code`
 - `url`
 - `files`
+
+### `summarize_wasm_boundary`
+
+**Description:** Build candidate JS -> memory bridge -> Wasm export -> sink chains for a captured Wasm module.
+
+**Parameters:**
+
+- `moduleId`
+- `maxChains`
 
 ### `trace_function`
 

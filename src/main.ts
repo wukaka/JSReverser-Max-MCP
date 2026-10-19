@@ -3,6 +3,7 @@
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
+
 import './polyfill.js';
 
 import {ensureBrowserConnected, resolveAutoConnectTarget} from './browser.js';
@@ -24,13 +25,12 @@ import * as jshookCollectorTools from './tools/collector.js';
 import * as consoleTools from './tools/console.js';
 import * as debuggerTools from './tools/debugger.js';
 import * as jshookDomTools from './tools/dom.js';
-import * as frameTools from './tools/frames.js';
 import * as jshookHookTools from './tools/hook.js';
+import * as frameTools from './tools/frames.js';
 import * as networkTools from './tools/network.js';
 import * as jshookPageTools from './tools/page.js';
 import * as pagesTools from './tools/pages.js';
 import * as jshookRebuildTools from './tools/rebuild.js';
-import {getJSHookRuntime} from './tools/runtime.js';
 import * as screenshotTools from './tools/screenshot.js';
 import * as scriptTools from './tools/script.js';
 import * as jshookStealthTools from './tools/stealth.js';
@@ -41,6 +41,7 @@ import * as websocketTools from './tools/websocket.js';
 import {ErrorCodes, formatError} from './utils/errors.js';
 import {TokenBudgetManager} from './utils/TokenBudgetManager.js';
 import {ToolExecutionScheduler} from './utils/ToolExecutionScheduler.js';
+import {getJSHookRuntime} from './tools/runtime.js';
 
 // If moved update release-please config
 // x-release-please-start-version
@@ -66,17 +67,22 @@ server.server.setRequestHandler(SetLevelRequestSchema, () => {
 
 let context: McpContext;
 async function getContext(): Promise<McpContext> {
-  const extraArgs: string[] = (args.chromeArg ?? []).map(String);
-  if (args.proxyServer) {
-    extraArgs.push(`--proxy-server=${args.proxyServer}`);
-  }
   const devtools = args.experimentalDevtools ?? false;
   const autoConnectTarget =
     !args.browserUrl && !args.wsEndpoint && args.autoConnect
       ? await resolveAutoConnectTarget()
       : undefined;
-  if (!args.browserUrl && !args.wsEndpoint && !autoConnectTarget)
-    throw new Error('No browser connection target: provide --browserUrl, --wsEndpoint, or --autoConnect');
+
+  // 兜底分支已移除：找不到可接管的浏览器时直接报错，
+  // 不再静默 launch 新实例(旧逻辑在父进程被强制终止时会把 launch 出来的
+  // Chrome 子进程留成孤儿——launch 走的是 pipe 传输，没有可外部接管的调试端口)。
+  if (!args.browserUrl && !args.wsEndpoint && !autoConnectTarget) {
+    throw new Error(
+      '找不到可接管的浏览器实例。本工具已禁用自动 launch 新浏览器的兜底逻辑，' +
+        '请先启动带 --remote-debugging-port 的 Chrome，再通过 --browserUrl / --wsEndpoint / --autoConnect 指定连接目标。',
+    );
+  }
+
   const browser = await ensureBrowserConnected({
     browserURL: args.browserUrl ?? autoConnectTarget?.browserURL,
     wsEndpoint: args.wsEndpoint ?? autoConnectTarget?.wsEndpoint,

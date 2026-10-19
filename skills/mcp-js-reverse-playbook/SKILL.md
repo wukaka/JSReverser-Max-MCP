@@ -11,6 +11,8 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 - `Hook-preferred`
 - `Breakpoint-last`
 - `Rebuild-oriented`
+- `Isolate-before-rebuild`
+- `High-signal experiments`
 - `Evidence-first`
 
 先页面观察，再最小化采样，再做本地补环境，不要跳过取证直接猜环境。
@@ -25,7 +27,7 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 4. 在 Node 里按“代理 env log + first divergence + 最小因果单元”补环境跑通
 5. 跑通后再做 AST 去混淆、VMP 插桩或逻辑提纯
 
-## 五阶段工作流
+## 六阶段工作流
 
 ### 1. Observe
 
@@ -58,7 +60,34 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 - 命中后先看 summary，再按需看 raw
 - Hook 不足时再考虑断点
 
-### 3. Rebuild
+### 3. Isolate
+
+目标：
+
+- 在本地重建之前，先确定目标系统实际检查哪一层、哪些字段。
+
+分工：
+
+- Capture 负责取证；Isolate 负责判定服务端检查什么。
+
+必须产出：
+
+- 接受基线：先做重放检查；重放通过则作为正控制；重放被拒且判定为重放检测时，改为建立多次成功通过的参数样本库（跨时间/会话，含完整提交条件）
+- 错误码/响应语义表（code、原文、触发条件、所暗示的层，重放拒绝单列一类）
+- 至少一次客户端内篡改或消融实验，证明哪些参数参与判定
+
+退出条件：
+
+- 能明确说出当前失败属于传输 / 客户端上下文 / 内容 / 时间 / 会话状态中的哪一层
+- 本地重建只针对该层，不跨层同时补
+
+规则：
+
+- 未完成 Isolate，不进入 Rebuild
+- 实验须可证伪、单变量，先写预测再执行
+- 结论写入账本；被推翻的结论保留撤回记录，不覆盖
+
+### 4. Rebuild
 
 目标：
 
@@ -74,7 +103,7 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 - 本地补环境必须以页面观测证据为依据
 - 不允许空想式补 `window/document/navigator/crypto/storage`
 
-### 4. Patch
+### 5. Patch
 
 目标：
 
@@ -89,7 +118,7 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 - 每次补丁后立即复测，并记录 `first divergence` 是否前移
 - 每次补丁都写入 task artifact
 
-### 5. DeepDive
+### 6. DeepDive
 
 目标：
 
@@ -121,6 +150,8 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 - 本地复现：`references/local-rebuild.md`
 - 补环境：`references/env-patching.md`、`references/node-env-rebuild.md`
 - 插桩：`references/instrumentation.md`
+- 服务端隔离：`references/server-side-isolation.md`
+- 输出变换探测：`references/output-transform-instrumentation.md`
 - AST 去混淆：`references/ast-deobfuscation.md`
 - 回退：`references/fallbacks.md`
 - 输出契约：`references/output-contract.md`

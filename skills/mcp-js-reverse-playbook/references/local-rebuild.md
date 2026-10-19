@@ -11,6 +11,7 @@
 
 执行顺序：
 
+0. 当目标把客户端环境作为接受条件时，实验前核对当前真机 profile：屏幕、可用区、视口、DPR、UA、client hints。陈旧的环境真值会产生“像内容问题”的失败，先排除这一项。
 1. 在页面里确认目标请求、脚本、函数
 2. 导出本地复现包
 3. 运行 `env/entry.js`
@@ -32,3 +33,5 @@
 - `fetch/XMLHttpRequest`
 
 不要在没有页面证据、没有代理 env log、没有 `first divergence` 记录的情况下大量脑补环境。
+
+重建约束（物料同源、不预置派生值、禁止空 catch）见 `env-patching.md`。

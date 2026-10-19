@@ -9,3 +9,5 @@
 - task artifact 路径
 - targetContext（至少包含 `targetActionDescription` 或其他目标边界）
 - 本地补环境状态（已补/未补）
+- 事实账本路径（编号、置信标签、适用链路、复现命令）
+- 已证伪/已撤回项清单
