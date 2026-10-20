@@ -1,6 +1,6 @@
 # 快速开始
 
-这份指南给第一次接触 `JSReverser-MCP` 的用户使用，目标是在 3 分钟内把服务跑起来。
+这份指南给第一次接触 `JSReverser-Max-MCP` 的用户使用，目标是在 3 分钟内把服务跑起来。
 
 ## 1. 安装依赖并构建
 
@@ -71,7 +71,7 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 例如在支持 `env` 的 MCP 客户端里，传入：
 
 ```toml
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "gemini"
 GEMINI_API_KEY = "your_key"
 GEMINI_MODEL = "gemini-2.0-flash-exp"

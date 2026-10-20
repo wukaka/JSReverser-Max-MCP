@@ -173,3 +173,4 @@ artifacts/tasks/smoke-task-*/
 docs/plans/
 
 .idea/
+.codebuddy/

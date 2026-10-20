@@ -45,7 +45,7 @@ describe('Property 5/8/29/30/31: Cache and performance', () => {
   });
 
   it('Property 31: script caching', async () => {
-    const cache = new CodeCache({cacheDir: '/tmp/js-reverse-mcp-cache-prop'});
+    const cache = new CodeCache({cacheDir: '/tmp/jsreverser-max-mcp-cache-prop'});
     await cache.init();
     await fc.assert(
       fc.asyncProperty(fc.string({minLength: 1, maxLength: 50}), async key => {

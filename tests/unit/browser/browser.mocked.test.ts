@@ -107,7 +107,7 @@ describe('browser.ts mocked', () => {
       devtools: true,
       args: ['--x-test'],
       viewport: {width: 800, height: 600},
-      logFile: createWriteStream('/tmp/js-reverse-mcp-browser-mocked.log'),
+      logFile: createWriteStream('/tmp/jsreverser-max-mcp-browser-mocked.log'),
     });
 
     assert.strictEqual(out, fakeBrowser as unknown as Awaited<ReturnType<typeof puppeteer.launch>>);

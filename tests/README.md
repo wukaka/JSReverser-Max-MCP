@@ -1,6 +1,6 @@
 # Tests
 
-This directory contains tests for the js-reverse-mcp project.
+This directory contains tests for the JSReverser-Max-MCP project.
 
 ## Directory Structure
 

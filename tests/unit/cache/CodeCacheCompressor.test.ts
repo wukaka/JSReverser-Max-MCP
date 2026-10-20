@@ -36,7 +36,7 @@ describe('Code cache and compressor', () => {
   });
 
   it('stores and retrieves cache entries', async () => {
-    const cache = new CodeCache({cacheDir: '/tmp/js-reverse-mcp-cache-test'});
+    const cache = new CodeCache({cacheDir: '/tmp/jsreverser-max-mcp-cache-test'});
     await cache.init();
 
     await cache.set('https://example.com', {
@@ -64,7 +64,7 @@ describe('Code cache and compressor', () => {
   });
 
   it('covers memory eviction, expiration, stats and warmup/cleanup branches', async () => {
-    const dir = `/tmp/js-reverse-mcp-cache-test-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const dir = `/tmp/jsreverser-max-mcp-cache-test-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const cache = new CodeCache({
       cacheDir: dir,
       maxAge: 1,

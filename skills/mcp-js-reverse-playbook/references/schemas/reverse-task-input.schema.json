@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://js-reverse-mcp.local/schemas/reverse-task-input.schema.json",
+  "$id": "https://jsreverser-max-mcp.local/schemas/reverse-task-input.schema.json",
   "title": "Reverse Task Input Contract",
   "description": "站点无关的逆向任务输入契约。仅允许脱敏种子，不包含真实敏感值。",
   "type": "object",

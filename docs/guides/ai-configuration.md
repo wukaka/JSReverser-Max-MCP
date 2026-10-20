@@ -12,11 +12,11 @@
 推荐方式示例：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
-args = ["/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js"]
+args = ["/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js"]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "anthropic"
 ANTHROPIC_API_KEY = "your_key"
 ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"

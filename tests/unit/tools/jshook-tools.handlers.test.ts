@@ -502,7 +502,7 @@ describe('jshook tools handlers', () => {
       await invokeTool(restoreSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1', navigateToSavedUrl: false }, res);
       await invokeTool(listSessionStates as unknown as ToolDefinitionHarness, {}, res);
       await invokeTool(dumpSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1', pretty: false }, res);
-      const tempDir = await mkdtemp(join(tmpdir(), 'js-reverse-mcp-'));
+      const tempDir = await mkdtemp(join(tmpdir(), 'jsreverser-max-mcp-'));
       const snapshotPath = join(tempDir, 'session-s1.json');
       const encryptedSnapshotPath = join(tempDir, 'session-s1.encrypted.json');
       const originalEncryptionKey = process.env.SESSION_STATE_ENCRYPTION_KEY;

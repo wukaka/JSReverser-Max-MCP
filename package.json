@@ -1,5 +1,5 @@
 {
-  "name": "js-reverse-mcp",
+  "name": "jsreverser-max-mcp",
   "version": "2.0.3",
   "description": "MCP server for JavaScript reverse engineering and debugging",
   "type": "module",
@@ -43,14 +43,14 @@
     "LICENSE",
     "!*.tsbuildinfo"
   ],
-  "repository": "zhizhuodemao/js-reverse-mcp",
-  "author": "zhizhuodemao",
+  "repository": "wukaka/JSReverser-Max-MCP",
+  "author": "wukaka",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/zhizhuodemao/js-reverse-mcp/issues"
+    "url": "https://github.com/wukaka/JSReverser-Max-MCP/issues"
   },
-  "homepage": "https://github.com/zhizhuodemao/js-reverse-mcp#readme",
-  "mcpName": "io.github.zhizhuodemao/js-reverse-mcp",
+  "homepage": "https://github.com/wukaka/JSReverser-Max-MCP#readme",
+  "mcpName": "io.github.wukaka/jsreverser-max-mcp",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "@babel/generator": "^7.26.5",

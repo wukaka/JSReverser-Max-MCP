@@ -7,7 +7,7 @@ globalThis.history ??= {};
 globalThis.screen ??= {};
 globalThis.canvas ??= {};
 globalThis.document ??= {cookie: '', location: globalThis.location};
-globalThis.navigator ??= {userAgent: 'js-reverse-mcp'};
+globalThis.navigator ??= {userAgent: 'jsreverser-max-mcp'};
 
 globalThis.atob ??= (value) => Buffer.from(String(value), 'base64').toString('utf8');
 globalThis.btoa ??= (value) => Buffer.from(String(value), 'utf8').toString('base64');

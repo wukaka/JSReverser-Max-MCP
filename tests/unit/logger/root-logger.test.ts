@@ -29,7 +29,7 @@ type ConsoleErrorFn = typeof console.error;
 
 describe('root logger', () => {
   it('saves debug logs to a file', async () => {
-    const dir = path.resolve('js-reverse-mcp-main/tests/.tmp/root-logger');
+    const dir = path.resolve('jsreverser-max-mcp-main/tests/.tmp/root-logger');
     fs.mkdirSync(dir, { recursive: true });
 
     const file = path.join(dir, `log-${Date.now()}.txt`);

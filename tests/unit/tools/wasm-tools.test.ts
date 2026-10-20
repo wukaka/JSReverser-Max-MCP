@@ -102,7 +102,7 @@ describe('wasm tools', () => {
       styleHints: ['Rust + wasm-bindgen glue'],
       riskTags: ['memory-bridge'],
       purposeHints: ['Looks crypto/signature related'],
-      artifactPath: 'H:\\CodeSpace\\AiReverse\\MCP\\JSReverser-MCP\\artifacts\\tasks\\demo\\wasm\\bins\\hash.wasm',
+      artifactPath: 'H:\\CodeSpace\\AiReverse\\MCP\\JSReverser-Max-MCP\\artifacts\\tasks\\demo\\wasm\\bins\\hash.wasm',
     };
     const runtimeEvents: WasmRuntimeEvent[] = [
       {
@@ -170,7 +170,7 @@ describe('wasm tools', () => {
       totalRuntimeEvents: 1,
       collectedAt: '2026-03-26T00:00:00.000Z',
       artifacts: {
-        rootDir: 'H:\\CodeSpace\\AiReverse\\MCP\\JSReverser-MCP\\artifacts\\tasks\\demo\\wasm',
+        rootDir: 'H:\\CodeSpace\\AiReverse\\MCP\\JSReverser-Max-MCP\\artifacts\\tasks\\demo\\wasm',
       },
     })) as RuntimeMethod;
     runtime.wasmCollector.getModules = (() => [moduleRecord]) as RuntimeMethod;

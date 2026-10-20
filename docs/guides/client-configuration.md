@@ -4,7 +4,7 @@
 
 约定：
 
-- 路径统一写成 `/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js`
+- 路径统一写成 `/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js`
 - 如果你要复用已经打开的浏览器，默认 remote debugging 地址使用 `http://127.0.0.1:9222`
 - 外部 AI 配置统一通过 MCP server 的 `env` 传入
 
@@ -15,10 +15,10 @@
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
       ],
@@ -52,10 +52,10 @@
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js"
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js"
       ]
     }
   }
@@ -67,10 +67,10 @@
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
       ]
@@ -84,10 +84,10 @@
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
       ],
@@ -106,10 +106,10 @@
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
       ],
@@ -128,10 +128,10 @@
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
       ],
@@ -150,10 +150,10 @@
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
       ],
@@ -171,7 +171,7 @@
 ### 最简单配置
 
 ```bash
-claude mcp add js-reverse node /ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js
+claude mcp add jsreverser-max-mcp node /ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js
 ```
 
 ### 推荐配置思路
@@ -184,11 +184,11 @@ claude mcp add js-reverse node /ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js
 Claude API：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
-args = ["/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js"]
+args = ["/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js"]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "anthropic"
 ANTHROPIC_API_KEY = "your_key"
 ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
@@ -197,11 +197,11 @@ ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
 Gemini API：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
-args = ["/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js"]
+args = ["/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js"]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "gemini"
 GEMINI_API_KEY = "your_key"
 GEMINI_MODEL = "gemini-2.0-flash-exp"
@@ -210,11 +210,11 @@ GEMINI_MODEL = "gemini-2.0-flash-exp"
 OpenAI API：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
-args = ["/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js"]
+args = ["/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js"]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "openai"
 OPENAI_API_KEY = "your_key"
 OPENAI_MODEL = "gpt-4o"
@@ -223,13 +223,13 @@ OPENAI_MODEL = "gpt-4o"
 ### 接管已打开的 Chrome
 
 ```bash
-claude mcp add js-reverse node /ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js -- --browserUrl http://127.0.0.1:9222
+claude mcp add jsreverser-max-mcp node /ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js -- --browserUrl http://127.0.0.1:9222
 ```
 
 如果你本地已经固定开着远程调试端口，也可以改用：
 
 ```bash
-claude mcp add js-reverse node /ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js -- --autoConnect
+claude mcp add jsreverser-max-mcp node /ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js -- --autoConnect
 ```
 
 ## Cursor
@@ -239,7 +239,7 @@ claude mcp add js-reverse node /ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js 
 ### 最简单配置
 
 - Command: `node`
-- Args: `[/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js]`
+- Args: `[/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js]`
 
 ### 完整 JSON 示例
 
@@ -248,10 +248,10 @@ claude mcp add js-reverse node /ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js 
 ```json
 {
   "mcpServers": {
-    "js-reverse": {
+    "jsreverser-max-mcp": {
       "command": "node",
       "args": [
-        "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+        "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
       ],
@@ -272,7 +272,7 @@ claude mcp add js-reverse node /ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js 
 
 ```json
 [
-  "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+  "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
   "--browserUrl",
   "http://127.0.0.1:9222"
 ]
@@ -332,18 +332,18 @@ Codex 使用 `config.toml`。
 ### 最简单配置
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
-args = ["/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js"]
+args = ["/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js"]
 ```
 
 ### 接管已打开的 Chrome
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
 args = [
-  "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+  "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
   "--browserUrl",
   "http://127.0.0.1:9222"
 ]
@@ -352,10 +352,10 @@ args = [
 ### 自动接管本机浏览器
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
 args = [
-  "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+  "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
   "--autoConnect"
 ]
 ```
@@ -365,11 +365,11 @@ args = [
 Gemini API：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
-args = ["/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js"]
+args = ["/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js"]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "gemini"
 GEMINI_API_KEY = "your_key"
 GEMINI_MODEL = "gemini-2.0-flash-exp"
@@ -378,15 +378,15 @@ GEMINI_MODEL = "gemini-2.0-flash-exp"
 Claude API：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
 args = [
-  "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+  "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
   "--browserUrl",
   "http://127.0.0.1:9222"
 ]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "anthropic"
 ANTHROPIC_API_KEY = "your_key"
 ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
@@ -395,15 +395,15 @@ ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
 OpenAI API：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
 args = [
-  "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+  "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
   "--browserUrl",
   "http://127.0.0.1:9222"
 ]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "openai"
 OPENAI_API_KEY = "your_key"
 OPENAI_MODEL = "gpt-4o"
@@ -412,15 +412,15 @@ OPENAI_MODEL = "gpt-4o"
 Gemini CLI：
 
 ```toml
-[mcp_servers.js-reverse]
+[mcp_servers.jsreverser-max-mcp]
 command = "node"
 args = [
-  "/ABSOLUTE/PATH/JSReverser-MCP/build/src/index.js",
+  "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
   "--browserUrl",
   "http://127.0.0.1:9222"
 ]
 
-[mcp_servers.js-reverse.env]
+[mcp_servers.jsreverser-max-mcp.env]
 DEFAULT_LLM_PROVIDER = "gemini"
 GEMINI_CLI_PATH = "gemini-cli"
 ```
