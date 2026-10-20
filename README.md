@@ -89,7 +89,7 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 }
 ```
 
-Cursor / Codex 的配置示例，以及 `--wsEndpoint`、`--autoConnect`、端口转发和 Gemini / Claude / OpenAI 的 `env` 写法，见：
+更多AI工具配置示例，以及 `--wsEndpoint`、`--autoConnect`、端口转发和 `env` 写法，见：
 
 - [docs/guides/client-configuration.md](docs/guides/client-configuration.md)
 - [docs/guides/browser-connection.md](docs/guides/browser-connection.md)
