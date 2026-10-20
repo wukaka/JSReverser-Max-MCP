@@ -182,10 +182,10 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 | | | `decompile_wasm_module` |
 
 > 注：强依赖外部 AI 的只有 `understand_code`；`detect_crypto`、`analyze_target`、`risk_panel`、`deobfuscate_code` 属于可选增强。外部 LLM 当前支持 `openai` / `anthropic` / `gemini`，配置通过进程环境变量完成，MCP 客户端里在 server 配置的 `env` 中传入（如 `DEFAULT_LLM_PROVIDER` + 对应 `*_API_KEY`）。不配置也能使用浏览器接管、Hook / 断点 / Network / WebSocket、`collect_code`、`export_rebuild_bundle` 等核心能力。完整 provider 列表、`.env` 写法与逐功能依赖说明见 [docs/guides/ai-configuration.md](docs/guides/ai-configuration.md)。
-
-完整参数说明见 [docs/reference/tool-reference.md](docs/reference/tool-reference.md)。
-按逆向流程选工具可继续看 [docs/reference/reverse-workflow.md](docs/reference/reverse-workflow.md)。
-Wasm 与 JSON 插件的完整参数与实现细节见 [docs/reference/wasm-and-json-plugins.md](docs/reference/wasm-and-json-plugins.md)。
+>
+- 完整参数说明见 [docs/reference/tool-reference.md](docs/reference/tool-reference.md)。
+- 按逆向流程选工具可继续看 [docs/reference/reverse-workflow.md](docs/reference/reverse-workflow.md)。
+- Wasm 与 JSON 插件的完整参数与实现细节见 [docs/reference/wasm-and-json-plugins.md](docs/reference/wasm-and-json-plugins.md)。
 
 ## 文档入口
 
