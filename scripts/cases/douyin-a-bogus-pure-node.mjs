@@ -91,7 +91,7 @@ Observe Phase:
      one stable caller stack for the resource-list request.
 
 3) Capture the write point of \`a_bogus\`:
-   - First use: \`ins_hook_function\` / \`ins_create_hook\`
+   - First use: \`ins_hook\` / \`ins_hook\`
    - Collect:
      stack frame when \`a_bogus\` is written,
      whether it is appended before send or during send.

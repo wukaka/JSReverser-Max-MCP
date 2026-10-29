@@ -11,60 +11,53 @@ import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';
 import {defineTool} from './ToolDefinition.js';
 
+const STEALTH_FEATURES = [
+  'hideWebDriver', 'mockChrome', 'setUserAgent', 'fixPermissions', 'mockPlugins',
+  'canvasNoise', 'webglOverride', 'audioContextNoise', 'fixLanguages', 'mockBattery',
+  'mockMediaDevices', 'mockNotifications', 'mockConnection', 'focusOverride',
+  'performanceNoise', 'overrideScreen',
+];
 
-export const injectStealth = defineTool({
-  name: 'ins_inject_stealth',
-  description: 'Inject anti-detection stealth scripts to current page.',
+export const stealth = defineTool({
+  name: 'ins_stealth',
+  description:
+    'Inspect or apply anti-detection stealth settings. action=inject applies stealth scripts to the current page; action=presets lists presets; action=features lists feature toggles; action=set_user_agent sets the page user-agent.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {
+    action: zod.enum(['inject', 'presets', 'features', 'set_user_agent']),
     preset: zod.enum(['windows-chrome', 'mac-chrome', 'mac-safari', 'linux-chrome', 'windows-edge']).optional(),
+    userAgent: zod.string().min(1).optional(),
   },
   handler: async (request, response) => {
     const runtime = getJSHookRuntime();
+    const {action, preset, userAgent} = request.params;
+
+    if (action === 'presets') {
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify(StealthScripts2025.getPresets(), null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    if (action === 'features') {
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify(STEALTH_FEATURES, null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    if (action === 'set_user_agent') {
+      if (!userAgent) {
+        throw new Error('userAgent is required for action=set_user_agent.');
+      }
+      const page = await runtime.collector.getActivePage();
+      await page.setUserAgent(userAgent);
+      response.appendResponseLine('User-Agent updated.');
+      return;
+    }
+
     const page = await runtime.collector.getActivePage();
-    await StealthScripts2025.injectAll(page, {preset: request.params.preset});
+    await StealthScripts2025.injectAll(page, {preset});
     response.appendResponseLine('Stealth scripts injected.');
-  },
-});
-
-export const listStealthPresets = defineTool({
-  name: 'ins_list_stealth_presets',
-  description: 'List available stealth presets.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
-  schema: {},
-  handler: async (_request, response) => {
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(StealthScripts2025.getPresets(), null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const listStealthFeatures = defineTool({
-  name: 'ins_list_stealth_features',
-  description: 'List available stealth feature toggles.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
-  schema: {},
-  handler: async (_request, response) => {
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify([
-      'hideWebDriver', 'mockChrome', 'setUserAgent', 'fixPermissions', 'mockPlugins',
-      'canvasNoise', 'webglOverride', 'audioContextNoise', 'fixLanguages', 'mockBattery',
-      'mockMediaDevices', 'mockNotifications', 'mockConnection', 'focusOverride',
-      'performanceNoise', 'overrideScreen',
-    ], null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const setUserAgent = defineTool({
-  name: 'ins_set_user_agent',
-  description: 'Set custom user-agent for active page.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
-  schema: {userAgent: zod.string().min(1)},
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-    const page = await runtime.collector.getActivePage();
-    await page.setUserAgent(request.params.userAgent);
-    response.appendResponseLine('User-Agent updated.');
   },
 });

@@ -2,6 +2,9 @@
 
 按逆向目标快速定位 MCP 工具，减少“该用哪个工具”的试错成本。
 
+> 不确定从哪开始：先调用 `reverse_guide(goal=...)` 拿路线。
+> 进入任务后：`rec_task_context(action=set, ...)`；结束时 `rec_export_reverse_summary(taskId)`。
+
 ## Step 0：开场必读（强制）
 
 任何新会话、任何新 case、任何“继续上次逆向”的第一步，都先读：
@@ -45,28 +48,33 @@
 
 - `obs_list_scripts`
 - `loc_get_script_source`
-- `loc_search_in_scripts`
+- `obs_list_collected_scripts`
 
 常用场景：先看主站脚本、动态加载脚本、webpack chunk 的体量和命名。
 
 ## 2) 在压缩/混淆代码里定位关键逻辑
 
 - `loc_find_in_script`
-- `ins_set_breakpoint_on_text`
-- `loc_understand_code`
-- `loc_deobfuscate_code`
+- `ins_breakpoint(action=set_text)`
+- `loc_analyze_code`
 
 常用关键词：`sign`、`token`、`nonce`、`encrypt`、`hmac`。
 
 ## 3) 追踪请求参数是怎么生成的
 
-- `ins_create_hook`
-- `ins_inject_hook`
+- `ins_hook`
 - `obs_get_hook_data`
-- `ins_break_on_xhr`
+- `ins_xhr_breakpoint`
 - `loc_get_request_initiator`
+- `loc_trace_request_to_signer`
+- `ins_signer`
+- `ver_analyze_signer`
+- `run_replay_request`
+- `run_header_ablation`
+- `ver_diff_network_requests`
+- `run_export_request`
 
-推荐先 Hook `fetch/xhr/websocket`，触发业务动作后再抓记录。
+推荐先 Hook `fetch/xhr/websocket`，触发业务动作后再抓记录；确认签名入口后用 `loc_trace_request_to_signer`，再用 `ins_signer` + `ver_analyze_signer` 判断签名字段，最后用重放/消融验证。
 
 同步记录：
 
@@ -104,9 +112,7 @@
 
 ## 6) 评估风险和加密实现
 
-- `loc_detect_crypto`
-- `ver_risk_panel`
-- `loc_understand_code`
+- `loc_analyze_code`
 
 用于识别弱算法、可疑签名实现、安全风险点。
 
@@ -131,23 +137,19 @@
 
 ## 9) 登录态复用（需登录站点建议）
 
-- `rec_save_session_state`
-- `rec_restore_session_state`
-- `rec_list_session_states`
-- `rec_dump_session_state`
-- `rec_load_session_state`
+- `rec_session_state`
 - `sys_check_browser_health`
 
 适合“必须登录后才能访问”的目标站，减少重复扫码/验证码成本。
 
 ## 10) 典型最小链路
 
-1. `nav_new_page`
+1. `nav_page(action=new)`
 2. 先读 `docs/reference/reverse-bootstrap.md`，再按其要求继续读 `docs/reference/case-safety-policy.md` 与 `docs/reference/reverse-workflow.md`
 3. `run_analyze_target`
 4. 设定目标边界：`targetKeywords`、`targetUrlPatterns`、`targetFunctionNames`、`targetActionDescription`
-5. `loc_search_in_scripts`
-6. `ins_create_hook` + `ins_inject_hook`
+5. `loc_search_in_sources`
+6. `ins_hook(action=create)` + `ins_hook(action=inject)`
 7. 触发页面动作
 8. `obs_get_hook_data`
 9. `rec_record_reverse_evidence`
@@ -155,7 +157,7 @@
 11. 运行 `env/entry.js` 并读取代理 env log
 12. 记录 `first divergence`
 13. `ver_diff_env_requirements`（仅辅助）
-14. `ver_risk_panel`
+14. `loc_analyze_code`
 15. `env-pass` 后再推进纯算法提纯
 
 ## 11) 参数总表

@@ -288,10 +288,6 @@ describe('DOMInspector evaluate execution', () => {
       assert.strictEqual(tree.tag, 'BODY');
       assert.ok(Array.isArray(tree.children));
 
-      const clickable = await inspector.findClickable('sub');
-      assert.strictEqual(clickable.length, 1);
-      assert.strictEqual(clickable[0]?.type, 'button');
-
       const styles = await inspector.getComputedStyle('#submit');
       assert.strictEqual(styles?.display, 'block');
 

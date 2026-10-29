@@ -16,6 +16,7 @@ import {
   getFormattedHeaderValue,
   getFormattedResponseBody,
   getFormattedRequestBody,
+  getRawResponseBuffer,
   getShortDescriptionForRequest,
   getStatusFromRequest,
 } from './formatters/networkFormatter.js';
@@ -34,9 +35,20 @@ import type {ImageContentData, Response} from './tools/ToolDefinition.js';
 import {paginate} from './utils/pagination.js';
 import type {PaginationOptions} from './utils/types.js';
 
+function formatBodySize(bytes: number | undefined): string {
+  if (bytes === undefined) {
+    return 'unknown';
+  }
+  if (bytes >= 1024) {
+    return `${bytes} bytes (${(bytes / 1024).toFixed(1)} KB)`;
+  }
+  return `${bytes} bytes`;
+}
+
 export class McpResponse implements Response {
   #includePages = false;
   #attachedNetworkRequestId?: number;
+  #attachedNetworkRequestIncludeBody = true;
   #attachedConsoleMessageId?: number;
   #textResponseLines: string[] = [];
   #images: ImageContentData[] = [];
@@ -119,8 +131,9 @@ export class McpResponse implements Response {
     };
   }
 
-  attachNetworkRequest(reqid: number): void {
+  attachNetworkRequest(reqid: number, options?: {includeBody?: boolean}): void {
     this.#attachedNetworkRequestId = reqid;
+    this.#attachedNetworkRequestIncludeBody = options?.includeBody ?? true;
   }
 
   attachConsoleMessage(msgid: number): void {
@@ -216,7 +229,14 @@ export class McpResponse implements Response {
       responseBody?: string;
     } = {};
 
-    if (this.#attachedNetworkRequestId) {
+    let bodySizes:
+      | {request?: number; response?: number}
+      | undefined;
+
+    if (
+      this.#attachedNetworkRequestId &&
+      this.#attachedNetworkRequestIncludeBody
+    ) {
       const request = context.getNetworkRequestById(
         this.#attachedNetworkRequestId,
       );
@@ -226,6 +246,34 @@ export class McpResponse implements Response {
       const response = request.response();
       if (response) {
         bodies.responseBody = await getFormattedResponseBody(response);
+      }
+    } else if (this.#attachedNetworkRequestId) {
+      const request = context.getNetworkRequestById(
+        this.#attachedNetworkRequestId,
+      );
+      bodySizes = {};
+
+      const requestBody = request.postData();
+      if (requestBody) {
+        bodySizes.request = Buffer.byteLength(requestBody, 'utf8');
+      } else if (request.hasPostData()) {
+        const fetched = await request.fetchPostData().catch(() => undefined);
+        if (fetched) {
+          bodySizes.request = Buffer.byteLength(fetched, 'utf8');
+        }
+      }
+
+      const response = request.response();
+      if (response) {
+        const contentLength = Number(response.headers()['content-length']);
+        if (Number.isFinite(contentLength) && contentLength >= 0) {
+          bodySizes.response = contentLength;
+        } else {
+          const buffer = await getRawResponseBuffer(response);
+          if (buffer) {
+            bodySizes.response = buffer.length;
+          }
+        }
       }
     }
 
@@ -340,6 +388,7 @@ export class McpResponse implements Response {
 
     return this.format(toolName, context, {
       bodies,
+      bodySizes,
       consoleData,
       consoleListData,
     });
@@ -353,6 +402,7 @@ export class McpResponse implements Response {
         requestBody?: string;
         responseBody?: string;
       };
+      bodySizes?: {request?: number; response?: number};
       consoleData: ConsoleMessageData | undefined;
       consoleListData: ConsoleMessageData[] | undefined;
     },
@@ -389,7 +439,9 @@ export class McpResponse implements Response {
       response.push(...parts);
     }
 
-    response.push(...this.#formatNetworkRequestData(context, data.bodies));
+    response.push(
+      ...this.#formatNetworkRequestData(context, data.bodies, data.bodySizes),
+    );
     response.push(...this.#formatConsoleData(data.consoleData));
 
     if (this.#networkRequestsOptions?.include) {
@@ -564,6 +616,7 @@ export class McpResponse implements Response {
       requestBody?: string;
       responseBody?: string;
     },
+    bodySizes?: {request?: number; response?: number},
   ): string[] {
     const response: string[] = [];
     const id = this.#attachedNetworkRequestId;
@@ -603,6 +656,15 @@ export class McpResponse implements Response {
     if (data.responseBody) {
       response.push(`### Response Body`);
       response.push(data.responseBody);
+    }
+
+    if (bodySizes) {
+      response.push(`### Body Sizes`);
+      response.push(`Request body: ${formatBodySize(bodySizes.request)}`);
+      response.push(`Response body: ${formatBodySize(bodySizes.response)}`);
+      response.push(
+        'Bodies not included. Use includeBody=true for small bodies, or toFile=true for bodies over 10KB.',
+      );
     }
 
     const httpFailure = httpRequest.failure();

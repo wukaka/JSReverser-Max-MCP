@@ -35,7 +35,7 @@
 适合场景：
 
 - 需要复用本机已登录浏览器
-- 希望 `loc_understand_code` 这类 AI 增强功能开箱即用
+- 希望 `loc_analyze_code` 这类 AI 增强功能开箱即用
 - 使用支持 `mcpServers` JSON 配置格式的客户端
 
 如果你用的是 Codex `config.toml`，直接看下方 “Codex” 小节的完整模板。
@@ -436,7 +436,7 @@ GEMINI_CLI_PATH = "gemini-cli"
 无论你用哪个客户端，建议都做一次最小验证：
 
 1. 打开一个已知页面
-2. 调用 `nav_list_pages`
+2. 调用 `nav_page(action=list)`
 3. 调用 `obs_list_scripts`
 4. 调用 `obs_list_network_requests`
 
@@ -444,6 +444,6 @@ GEMINI_CLI_PATH = "gemini-cli"
 
 如果你还配置了外部 AI，可以再补一条验证：
 
-5. 调用 `loc_understand_code` 分析一小段代码
+5. 调用 `loc_analyze_code` 分析一小段代码
 
 如果返回 provider 未配置错误，通常说明 MCP server 的 `env` 没有传进去，而不是工具本身有问题。

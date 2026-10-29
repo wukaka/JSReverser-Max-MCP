@@ -1,7 +1,18 @@
 # 工具参数默认值
-- loc_search_in_scripts: sign|token|nonce|encrypt|hmac|sha|md5|cookie|h5st
+- loc_search_in_sources: query=sign|token|nonce|encrypt|hmac|sha|md5|cookie|h5st (isRegex=false)
+- 可点击元素配方（替代已删除的 find_clickable_elements）: obs_query_dom(selector='button, a[href], input[type=button], input[type=submit], [role=button], [role=tab], [role=link], [role=menuitem], [tabindex]:not([tabindex="-1"]), [onclick], summary, label[for]', all=true)
 - obs_get_hook_data: view=summary, maxRecords=80
 - 首轮 Hook: fetch + xhr
 - rec_record_reverse_evidence: channel=runtime-evidence
 - rec_export_rebuild_bundle: 优先导出 env/entry.js + env/env.js + env/polyfills.js + env/capture.json
 - 断点默认禁用，只有兜底时启用
+- run_header_ablation: maxRuns=10, mode=greedy, usePageContext=true
+- run_replay_request: usePageContext=true, timeoutMs=15000；跨站默认拦截，必要时传 allowHosts
+- ver_diff_network_requests: ignoreHeaders 建议包含 cookie/date/content-length
+- ins_signer: 先 register(name, expr)，再 sign(name, payload)；persist=true 才会落盘
+- ver_analyze_signer: trials=2, fields<=20；payload 必须是对象，只扰动顶层字段
+- loc_trace_request_to_signer: topN=5, contextChars=400；只给候选入口，签名函数可能在请求构建前已执行
+- reverse_guide: 先给 goal；scenario 可显式指定（from_zero/confirm_change/header_necessity/signer_inputs/offline_repro）
+- obs_get_network_request: 默认 includeBody=false；需要大 body 时 toFile=true（>10KB 落盘到 artifacts/outputs，可用 MCP_OUTPUT_DIR 覆盖目录）
+- rec_task_context: 进入任务先 action=set；之后 run_replay_request / run_header_ablation / ver_analyze_signer / loc_trace_request_to_signer 自动写入 experiments 日志
+- rec_export_reverse_summary: 传 path 落盘，否则直接返回 markdown

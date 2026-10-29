@@ -86,7 +86,7 @@ curl http://127.0.0.1:9222/json/version
 
 1. 手动打开一个目标页面
 2. 启动 MCP
-3. 调用 `nav_list_pages`
+3. 调用 `nav_page(action=list)`
 4. 看返回里是否出现你刚刚打开的页面
 5. 再调用 `obs_list_network_requests` 或 `obs_list_scripts`
 

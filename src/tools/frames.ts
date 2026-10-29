@@ -20,10 +20,10 @@ function getFrameDepth(frame: Frame): number {
   return depth;
 }
 
-export const listFrames = defineTool({
-  name: 'nav_list_frames',
+const listFramesTool = defineTool({
+  name: 'nav_frame(action=list)',
   description:
-    'Lists all frames (including iframes) in the current page as a tree. Shows frame index, name, and URL. Use nav_select_frame to switch execution context to a specific frame.',
+    'Lists all frames (including iframes) in the current page as a tree. Shows frame index, name, and URL. Use nav_frame(action=select) to switch execution context to a specific frame.',
   annotations: {
     title: 'List Frames',
     category: ToolCategory.DEBUGGING,
@@ -54,10 +54,10 @@ export const listFrames = defineTool({
   },
 });
 
-export const selectFrame = defineTool({
-  name: 'nav_select_frame',
+const selectFrameTool = defineTool({
+  name: 'nav_frame(action=select)',
   description:
-    'Selects a frame (by index from nav_list_frames) as the execution context for ins_evaluate_script, ins_hook_function, obs_inspect_object, and other tools that run JavaScript in the page.',
+    'Selects a frame (by index from nav_frame(action=list)) as the execution context for ins_evaluate_script, ins_hook, obs_inspect_object, and other tools that run JavaScript in the page.',
   annotations: {
     title: 'Select Frame',
     category: ToolCategory.DEBUGGING,
@@ -68,7 +68,7 @@ export const selectFrame = defineTool({
       .number()
       .int()
       .min(0)
-      .describe('The frame index from nav_list_frames. 0 = main frame.'),
+      .describe('The frame index from nav_frame(action=list). 0 = main frame.'),
   },
   handler: async (request, response, context) => {
     const page = context.getSelectedPage();
@@ -77,7 +77,7 @@ export const selectFrame = defineTool({
 
     if (frameIdx >= frames.length) {
       response.appendResponseLine(
-        `Invalid frame index ${frameIdx}. Use nav_list_frames to see available frames (0-${frames.length - 1}).`,
+        `Invalid frame index ${frameIdx}. Use nav_frame(action=list) to see available frames (0-${frames.length - 1}).`,
       );
       return;
     }
@@ -94,5 +94,33 @@ export const selectFrame = defineTool({
     response.appendResponseLine(
       `Switched to frame ${frameIdx}: ${frame.url()}${name}`,
     );
+  },
+});
+
+/**
+ * Unified frame context management.
+ */
+export const frame = defineTool({
+  name: 'nav_frame',
+  description:
+    'Manages frames: action=list lists all frames (including iframes); action=select switches the execution context to a frame by index.',
+  annotations: {
+    title: 'Frame',
+    category: ToolCategory.DEBUGGING,
+    readOnlyHint: false,
+  },
+  schema: {
+    action: zod.enum(['list', 'select']),
+    frameIdx: zod.number().int().min(0).optional().describe('For action=select: frame index from action=list. 0 = main frame.'),
+  },
+  handler: async (request, response, context) => {
+    if (request.params.action === 'list') {
+      await listFramesTool.handler({params: {}}, response, context);
+      return;
+    }
+    if (request.params.frameIdx === undefined) {
+      throw new Error('frameIdx is required for action=select.');
+    }
+    await selectFrameTool.handler({params: {frameIdx: request.params.frameIdx}}, response, context);
   },
 });

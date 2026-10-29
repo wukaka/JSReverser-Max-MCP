@@ -46,19 +46,3 @@ export const getDomStructure = defineTool({
     response.appendResponseLine('```');
   },
 });
-
-export const findClickableElements = defineTool({
-  name: 'loc_find_clickable_elements',
-  description: 'Find clickable buttons/links, optionally filtered by text.',
-  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
-  schema: {
-    filterText: zod.string().optional(),
-  },
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-    const result = await runtime.domInspector.findClickable(request.params.filterText);
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(result, null, 2));
-    response.appendResponseLine('```');
-  },
-});

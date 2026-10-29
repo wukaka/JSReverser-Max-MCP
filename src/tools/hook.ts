@@ -166,41 +166,6 @@ async function syncHookRecordsFromPage(runtime: ReturnType<typeof getJSHookRunti
   }
 }
 
-export const createHook = defineTool({
-  name: 'ins_create_hook',
-  description: 'RECOMMENDED: Create hook script for function/fetch/xhr/property/cookie/websocket/eval/timer. Hooks run without pausing page execution and are the preferred approach over breakpoints for monitoring and interception.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
-  schema: {
-    type: zod.string(),
-    params: zod.record(zod.string(), zod.unknown()).optional(),
-    description: zod.string().optional(),
-    action: zod.enum(['log', 'block', 'modify', 'passthrough']).optional(),
-  },
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-    const result = runtime.hookManager.create(request.params);
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(result, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const injectHook = defineTool({
-  name: 'ins_inject_hook',
-  description: 'Inject an existing hook into the current page.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
-  schema: {hookId: zod.string()},
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-    const hook = runtime.hookManager.getHook(request.params.hookId);
-    if (!hook) {
-      throw new Error(`Hook not found: ${request.params.hookId}`);
-    }
-    await runtime.pageController.injectScript(hook.script);
-    response.appendResponseLine(`Hook injected: ${hook.hookId}`);
-  },
-});
-
 export const getHookData = defineTool({
   name: 'obs_get_hook_data',
   description: 'Get captured data for one hook or all hooks. Supports raw view and summary view for noise reduction.',
@@ -246,17 +211,5 @@ export const getHookData = defineTool({
     response.appendResponseLine('```json');
     response.appendResponseLine(typeof data === 'string' ? data : JSON.stringify(data, null, 2));
     response.appendResponseLine('```');
-  },
-});
-
-export const removeHook = defineTool({
-  name: 'ins_remove_hook',
-  description: 'Remove a hook by id.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
-  schema: {hookId: zod.string()},
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-    const removed = runtime.hookManager.remove(request.params.hookId);
-    response.appendResponseLine(removed ? 'Hook removed.' : 'Hook not found.');
   },
 });

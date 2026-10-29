@@ -151,6 +151,7 @@ js-reverse-mcp-main/
 .DS_Store
 
 # Reverse task artifacts are local by default; only the shared template is committed.
+artifacts/signers.json
 artifacts/tasks/*
 !artifacts/tasks/_TEMPLATE/
 !artifacts/tasks/_TEMPLATE/**

@@ -10,38 +10,21 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { StealthScripts2025 } from '../../../src/modules/stealth/StealthScripts2025.js';
-import {
-  analyzeTarget,
-  deobfuscateCode,
-  detectCrypto,
-  exportSessionReport,
-  riskPanel,
-  summarizeCode,
-  understandCode,
-} from '../../../src/tools/analyzer.js';
-import { collectCode, collectionDiff, searchInScripts } from '../../../src/tools/collector.js';
-import { findClickableElements, getDomStructure, queryDom } from '../../../src/tools/dom.js';
-import { createHook, getHookData, injectHook, removeHook } from '../../../src/tools/hook.js';
+import { analyzeCode, analyzeTarget, exportSessionReport } from '../../../src/tools/analyzer.js';
+import { collectCode, collectionDiff, listCollectedScripts } from '../../../src/tools/collector.js';
+import { getDomStructure, queryDom } from '../../../src/tools/dom.js';
+import { hook } from '../../../src/tools/debugger.js';
+import { getHookData } from '../../../src/tools/hook.js';
 import {
   checkBrowserHealth,
-  deleteSessionState,
-  dumpSessionState,
   clickElement,
   getPerformanceMetrics,
-  listSessionStates,
-  loadSessionState,
-  restoreSessionState,
-  saveSessionState,
+  sessionState,
   typeText,
   waitForElement,
 } from '../../../src/tools/page.js';
 import { getJSHookRuntime } from '../../../src/tools/runtime.js';
-import {
-  injectStealth,
-  listStealthFeatures,
-  listStealthPresets,
-  setUserAgent,
-} from '../../../src/tools/stealth.js';
+import { stealth as stealthTool } from '../../../src/tools/stealth.js';
 
 type RuntimeMethod = (...args: unknown[]) => unknown;
 
@@ -83,7 +66,6 @@ interface RuntimeHarness {
     querySelector: RuntimeMethod;
     querySelectorAll: RuntimeMethod;
     getStructure: RuntimeMethod;
-    findClickable: RuntimeMethod;
   };
   hookManager: {
     create: RuntimeMethod;
@@ -130,7 +112,9 @@ const invokeTool = async (
   params: Record<string, unknown>,
   response: ToolResponseHarness,
 ): Promise<void> => {
-  await tool.handler({ params }, response, {});
+  await tool.handler({ params }, response, {
+    getSelectedFrame: () => ({ evaluate: async () => ({ success: true }) }),
+  } as never);
 };
 
 function makeResponse(): ToolResponseHarness {
@@ -168,7 +152,6 @@ describe('jshook tools handlers', () => {
       querySelector: runtime.domInspector.querySelector,
       querySelectorAll: runtime.domInspector.querySelectorAll,
       getStructure: runtime.domInspector.getStructure,
-      findClickable: runtime.domInspector.findClickable,
       createHook: runtime.hookManager.create,
       getHook: runtime.hookManager.getHook,
       getAllHooks: runtime.hookManager.getAllHooks,
@@ -243,7 +226,6 @@ describe('jshook tools handlers', () => {
     runtime.domInspector.querySelector = async () => ({ found: true, nodeName: 'DIV' });
     runtime.domInspector.querySelectorAll = async () => [{ found: true, nodeName: 'SPAN' }];
     runtime.domInspector.getStructure = async () => ({ tag: 'BODY' });
-    runtime.domInspector.findClickable = async () => [{ selector: '#x', text: 'x', type: 'button', visible: true }];
 
     let hookCounter = 0;
     const baseTs = Date.now();
@@ -374,14 +356,14 @@ describe('jshook tools handlers', () => {
     try {
       const res = makeResponse();
 
-      await invokeTool(deobfuscateCode as unknown as ToolDefinitionHarness, { code: 'x' }, res);
-      await invokeTool(understandCode as unknown as ToolDefinitionHarness, { code: 'x', focus: 'all' }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'deobfuscate', code: 'x' }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'understand', code: 'x', focus: 'all' }, res);
 
-      await invokeTool(summarizeCode as unknown as ToolDefinitionHarness, { mode: 'single', code: 'const x=1;' }, res);
-      await invokeTool(summarizeCode as unknown as ToolDefinitionHarness, { mode: 'batch', files: [] }, res);
-      await invokeTool(summarizeCode as unknown as ToolDefinitionHarness, { mode: 'project', files: [] }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'summarize', mode: 'single', code: 'const x=1;' }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'summarize', mode: 'batch', files: [] }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'summarize', mode: 'project', files: [] }, res);
 
-      await invokeTool(detectCrypto as unknown as ToolDefinitionHarness, { code: 'md5(x)' }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'crypto', code: 'md5(x)' }, res);
       await invokeTool(analyzeTarget as unknown as ToolDefinitionHarness, { url: 'https://example.com', hookPreset: 'api-signature' }, res);
       await invokeTool(analyzeTarget as unknown as ToolDefinitionHarness, {
         url: 'https://example.com',
@@ -431,12 +413,12 @@ describe('jshook tools handlers', () => {
         waitAfterHookMs: 1,
         maxFingerprints: 4,
       }, res);
-      await invokeTool(riskPanel as unknown as ToolDefinitionHarness, { code: 'md5(x)' }, res);
-      await invokeTool(riskPanel as unknown as ToolDefinitionHarness, { hookId: 'h1' }, res);
-      await invokeTool(riskPanel as unknown as ToolDefinitionHarness, { hookId: 'h1', includeHookSignals: false }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'risk', code: 'md5(x)' }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'risk', hookId: 'h1' }, res);
+      await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'risk', hookId: 'h1', includeHookSignals: false }, res);
       runtime.collector.getTopPriorityFiles = () => ({ files: [], totalSize: 0, totalFiles: 0 });
       await assert.rejects(async () => {
-        await invokeTool(riskPanel as unknown as ToolDefinitionHarness, {}, res);
+        await invokeTool(analyzeCode as unknown as ToolDefinitionHarness, { action: 'risk' }, res);
       });
       runtime.collector.getTopPriorityFiles = () => ({
         files: [{ url: 'top.js', content: 'x', size: 1, type: 'external' }],
@@ -451,7 +433,7 @@ describe('jshook tools handlers', () => {
       await invokeTool(collectCode as unknown as ToolDefinitionHarness, { url: 'https://example.com', returnMode: 'pattern', pattern: 'b' }, res);
       await invokeTool(collectCode as unknown as ToolDefinitionHarness, { url: 'https://example.com', returnMode: 'pattern' }, res);
       await invokeTool(collectCode as unknown as ToolDefinitionHarness, { url: 'https://example.com', returnMode: 'top-priority' }, res);
-      await invokeTool(searchInScripts as unknown as ToolDefinitionHarness, { pattern: 'abc', limit: 1 }, res);
+      await invokeTool(listCollectedScripts as unknown as ToolDefinitionHarness, { pattern: 'abc', limit: 1 }, res);
       await invokeTool(collectionDiff as unknown as ToolDefinitionHarness, {
         previous: [{ url: 'old.js', size: 1, type: 'external' }],
         includeUnchanged: true,
@@ -476,71 +458,75 @@ describe('jshook tools handlers', () => {
       await invokeTool(queryDom as unknown as ToolDefinitionHarness, { selector: '#x', all: false }, res);
       await invokeTool(queryDom as unknown as ToolDefinitionHarness, { selector: '.x', all: true, limit: 2 }, res);
       await invokeTool(getDomStructure as unknown as ToolDefinitionHarness, { maxDepth: 2, includeText: true }, res);
-      await invokeTool(findClickableElements as unknown as ToolDefinitionHarness, { filterText: 'x' }, res);
 
-      await invokeTool(createHook as unknown as ToolDefinitionHarness, { type: 'fetch' }, res);
-      await invokeTool(injectHook as unknown as ToolDefinitionHarness, { hookId: 'h1' }, res);
+      await invokeTool(hook as unknown as ToolDefinitionHarness, { action: 'create', type: 'fetch' }, res);
+      await invokeTool(hook as unknown as ToolDefinitionHarness, { action: 'inject', hookId: 'h1' }, res);
       await invokeTool(getHookData as unknown as ToolDefinitionHarness, { hookId: 'h1' }, res);
       await invokeTool(getHookData as unknown as ToolDefinitionHarness, {}, res);
       await invokeTool(getHookData as unknown as ToolDefinitionHarness, { hookId: 'h1', view: 'summary', maxRecords: 2 }, res);
       await invokeTool(getHookData as unknown as ToolDefinitionHarness, { view: 'summary', maxRecords: 1 }, res);
-      await invokeTool(removeHook as unknown as ToolDefinitionHarness, { hookId: 'h1' }, res);
-      await invokeTool(removeHook as unknown as ToolDefinitionHarness, { hookId: 'missing' }, res);
+      await invokeTool(hook as unknown as ToolDefinitionHarness, { action: 'remove', hookId: 'h1' }, res);
+      await invokeTool(hook as unknown as ToolDefinitionHarness, { action: 'remove', hookId: 'missing' }, res);
 
       await invokeTool(clickElement as unknown as ToolDefinitionHarness, { selector: '#x' }, res);
       await invokeTool(typeText as unknown as ToolDefinitionHarness, { selector: '#x', text: 'abc', delay: 10 }, res);
       await invokeTool(waitForElement as unknown as ToolDefinitionHarness, { selector: '#x', timeout: 100 }, res);
       await invokeTool(getPerformanceMetrics as unknown as ToolDefinitionHarness, {}, res);
-      await invokeTool(saveSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1' }, res);
-      await invokeTool(saveSessionState as unknown as ToolDefinitionHarness, {
+      await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'save', sessionId: 's1' }, res);
+      await invokeTool(sessionState as unknown as ToolDefinitionHarness, {
+        action: 'save',
         sessionId: 's-empty',
         includeCookies: false,
         includeLocalStorage: false,
         includeSessionStorage: false,
       }, res);
-      await invokeTool(restoreSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1', clearStorageBeforeRestore: true }, res);
-      await invokeTool(restoreSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1', navigateToSavedUrl: false }, res);
-      await invokeTool(listSessionStates as unknown as ToolDefinitionHarness, {}, res);
-      await invokeTool(dumpSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1', pretty: false }, res);
+      await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'restore', sessionId: 's1', clearStorageBeforeRestore: true }, res);
+      await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'restore', sessionId: 's1', navigateToSavedUrl: false }, res);
+      await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'list' }, res);
+      await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'dump', sessionId: 's1', pretty: false }, res);
       const tempDir = await mkdtemp(join(tmpdir(), 'jsreverser-max-mcp-'));
       const snapshotPath = join(tempDir, 'session-s1.json');
       const encryptedSnapshotPath = join(tempDir, 'session-s1.encrypted.json');
       const originalEncryptionKey = process.env.SESSION_STATE_ENCRYPTION_KEY;
       try {
-        await invokeTool(dumpSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1', path: snapshotPath }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'dump', sessionId: 's1', path: snapshotPath }, res);
         const snapshotJson = await readFile(snapshotPath, 'utf8');
         process.env.SESSION_STATE_ENCRYPTION_KEY = 'unit-test-session-key';
-        await invokeTool(dumpSessionState as unknown as ToolDefinitionHarness, {
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, {
+        action: 'dump',
           sessionId: 's1',
           path: encryptedSnapshotPath,
           encrypt: true,
         }, res);
-        await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, {
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, {
+        action: 'load',
           path: encryptedSnapshotPath,
           sessionId: 's1-encrypted',
           overwrite: true,
         }, res);
         process.env.SESSION_STATE_ENCRYPTION_KEY = '';
         await assert.rejects(async () => {
-          await invokeTool(dumpSessionState as unknown as ToolDefinitionHarness, {
+          await invokeTool(sessionState as unknown as ToolDefinitionHarness, {
+        action: 'dump',
             sessionId: 's1',
             path: encryptedSnapshotPath,
             encrypt: true,
           }, res);
         });
         await assert.rejects(async () => {
-          await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, {
+          await invokeTool(sessionState as unknown as ToolDefinitionHarness, {
+        action: 'load',
             path: encryptedSnapshotPath,
             sessionId: 's1-encrypted-2',
             overwrite: true,
           }, res);
         });
-        await invokeTool(deleteSessionState as unknown as ToolDefinitionHarness, { sessionId: 's1' }, res);
-        await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, { snapshotJson, sessionId: 's1' }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'delete', sessionId: 's1' }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'load', snapshotJson, sessionId: 's1' }, res);
         await assert.rejects(async () => {
-          await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, { snapshotJson, sessionId: 's1' }, res);
+          await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'load', snapshotJson, sessionId: 's1' }, res);
         });
-        await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, { path: snapshotPath, sessionId: 's1', overwrite: true }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'load', path: snapshotPath, sessionId: 's1', overwrite: true }, res);
 
         const expiredSnapshotJson = JSON.stringify({
           id: 'expired-one',
@@ -552,26 +538,26 @@ describe('jshook tools handlers', () => {
           localStorage: {},
           sessionStorage: {},
         });
-        await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, { snapshotJson: expiredSnapshotJson, overwrite: true }, res);
-        await invokeTool(listSessionStates as unknown as ToolDefinitionHarness, {}, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'load', snapshotJson: expiredSnapshotJson, overwrite: true }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'list' }, res);
       } finally {
         process.env.SESSION_STATE_ENCRYPTION_KEY = originalEncryptionKey;
         await rm(tempDir, {recursive: true, force: true});
       }
       await assert.rejects(async () => {
-        await invokeTool(restoreSessionState as unknown as ToolDefinitionHarness, { sessionId: 'missing-session' }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'restore', sessionId: 'missing-session' }, res);
       });
       await assert.rejects(async () => {
-        await invokeTool(dumpSessionState as unknown as ToolDefinitionHarness, { sessionId: 'missing-session' }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'dump', sessionId: 'missing-session' }, res);
       });
       await assert.rejects(async () => {
-        await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, {}, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'load' }, res);
       });
       await assert.rejects(async () => {
-        await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, { snapshotJson: '{bad json}' }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'load', snapshotJson: '{bad json}' }, res);
       });
       await assert.rejects(async () => {
-        await invokeTool(loadSessionState as unknown as ToolDefinitionHarness, { snapshotJson: '1' }, res);
+        await invokeTool(sessionState as unknown as ToolDefinitionHarness, { action: 'load', snapshotJson: '1' }, res);
       });
       await invokeTool(checkBrowserHealth as unknown as ToolDefinitionHarness, {}, res);
       runtime.browserManager.getBrowser = () => ({isConnected: () => false});
@@ -598,13 +584,13 @@ describe('jshook tools handlers', () => {
       await invokeTool(checkBrowserHealth as unknown as ToolDefinitionHarness, {}, res);
       runtime.pageController.getPage = async () => activePage;
 
-      await invokeTool(injectStealth as unknown as ToolDefinitionHarness, { preset: 'windows-chrome' }, res);
-      await invokeTool(listStealthPresets as unknown as ToolDefinitionHarness, {}, res);
-      await invokeTool(listStealthFeatures as unknown as ToolDefinitionHarness, {}, res);
-      await invokeTool(setUserAgent as unknown as ToolDefinitionHarness, { userAgent: 'ua-test' }, res);
+      await invokeTool(stealthTool as unknown as ToolDefinitionHarness, { action: 'inject', preset: 'windows-chrome' }, res);
+      await invokeTool(stealthTool as unknown as ToolDefinitionHarness, { action: 'presets' }, res);
+      await invokeTool(stealthTool as unknown as ToolDefinitionHarness, { action: 'features' }, res);
+      await invokeTool(stealthTool as unknown as ToolDefinitionHarness, { action: 'set_user_agent', userAgent: 'ua-test' }, res);
 
       await assert.rejects(async () => {
-        await invokeTool(injectHook as unknown as ToolDefinitionHarness, { hookId: 'missing' }, res);
+        await invokeTool(hook as unknown as ToolDefinitionHarness, { action: 'inject', hookId: 'missing' }, res);
       });
 
       assert.ok(res.lines.some((line) => line.includes('Hook injected: h1')));
@@ -640,7 +626,6 @@ describe('jshook tools handlers', () => {
       runtime.domInspector.querySelector = originals.querySelector;
       runtime.domInspector.querySelectorAll = originals.querySelectorAll;
       runtime.domInspector.getStructure = originals.getStructure;
-      runtime.domInspector.findClickable = originals.findClickable;
       runtime.hookManager.create = originals.createHook;
       runtime.hookManager.getHook = originals.getHook;
       runtime.hookManager.getAllHooks = originals.getAllHooks;

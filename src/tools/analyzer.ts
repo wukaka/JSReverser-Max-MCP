@@ -11,48 +11,13 @@ import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';
 import {defineTool} from './ToolDefinition.js';
 
-
-export const deobfuscateCode = defineTool({
-  name: 'loc_deobfuscate_code',
-  description: 'AI-assisted JavaScript deobfuscation.',
+export const analyzeCode = defineTool({
+  name: 'loc_analyze_code',
+  description:
+    'Analyzes JavaScript source. action=deobfuscate | understand | summarize | crypto | risk. Provide code (for summarize you may pass url/files; for risk you may omit code to use collected files).',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
-    code: zod.string(),
-    aggressive: zod.boolean().optional(),
-    renameVariables: zod.boolean().optional(),
-  },
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-    const result = await runtime.deobfuscator.deobfuscate(request.params);
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(result, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const understandCode = defineTool({
-  name: 'loc_understand_code',
-  description: 'Analyze code structure/business/security with AI + static analysis.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
-  schema: {
-    code: zod.string(),
-    focus: zod.enum(['all', 'structure', 'business', 'security']).optional(),
-  },
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-    const result = await runtime.analyzer.understand(request.params);
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(result, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const summarizeCode = defineTool({
-  name: 'loc_summarize_code',
-  description: 'Summarize one code file, multiple files, or project-level context.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
-  schema: {
-    mode: zod.enum(['single', 'batch', 'project']).default('single'),
+    action: zod.enum(['deobfuscate', 'understand', 'summarize', 'crypto', 'risk']),
     code: zod.string().optional(),
     url: zod.string().optional(),
     files: zod.array(zod.object({
@@ -61,53 +26,135 @@ export const summarizeCode = defineTool({
       size: zod.number().int().nonnegative(),
       type: zod.enum(['inline', 'external', 'dynamic', 'service-worker', 'web-worker']),
     })).optional(),
-  },
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-
-    if (request.params.mode === 'project') {
-      const result = await runtime.summarizer.summarizeProject(request.params.files ?? []);
-      response.appendResponseLine('```json');
-      response.appendResponseLine(JSON.stringify(result, null, 2));
-      response.appendResponseLine('```');
-      return;
-    }
-
-    if (request.params.mode === 'batch') {
-      const result = await runtime.summarizer.summarizeBatch(request.params.files ?? []);
-      response.appendResponseLine('```json');
-      response.appendResponseLine(JSON.stringify(result, null, 2));
-      response.appendResponseLine('```');
-      return;
-    }
-
-    const file = {
-      url: request.params.url ?? 'inline-input.js',
-      content: request.params.code ?? '',
-      size: (request.params.code ?? '').length,
-      type: 'inline' as const,
-    };
-    const result = await runtime.summarizer.summarizeFile(file);
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(result, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const detectCrypto = defineTool({
-  name: 'loc_detect_crypto',
-  description: 'Detect cryptographic algorithms/libraries from JavaScript source.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
-  schema: {
-    code: zod.string(),
+    focus: zod.enum(['all', 'structure', 'business', 'security']).optional(),
+    aggressive: zod.boolean().optional(),
+    renameVariables: zod.boolean().optional(),
     useAI: zod.boolean().optional(),
+    mode: zod.enum(['single', 'batch', 'project']).optional().describe('For action=summarize: scope.'),
+    includeHookSignals: zod.boolean().optional(),
+    hookId: zod.string().optional(),
+    topN: zod.number().int().positive().optional(),
   },
   handler: async (request, response) => {
     const runtime = getJSHookRuntime();
-    const result = await runtime.cryptoDetector.detect(request.params);
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(result, null, 2));
-    response.appendResponseLine('```');
+    const params = request.params;
+    const append = (data: unknown): void => {
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify(data, null, 2));
+      response.appendResponseLine('```');
+    };
+
+    if (params.action === 'deobfuscate') {
+      if (!params.code) {
+        throw new Error('code is required for action=deobfuscate.');
+      }
+      append(await runtime.deobfuscator.deobfuscate({
+        code: params.code,
+        aggressive: params.aggressive,
+        renameVariables: params.renameVariables,
+      }));
+      return;
+    }
+
+    if (params.action === 'understand') {
+      if (!params.code) {
+        throw new Error('code is required for action=understand.');
+      }
+      append(await runtime.analyzer.understand({code: params.code, focus: params.focus}));
+      return;
+    }
+
+    if (params.action === 'crypto') {
+      if (!params.code) {
+        throw new Error('code is required for action=crypto.');
+      }
+      const cryptoOptions = {code: params.code, useAI: params.useAI};
+      append(await runtime.cryptoDetector.detect(cryptoOptions));
+      return;
+    }
+
+    if (params.action === 'summarize') {
+      const mode = params.mode ?? 'single';
+      if (mode === 'project') {
+        append(await runtime.summarizer.summarizeProject(params.files ?? []));
+        return;
+      }
+      if (mode === 'batch') {
+        append(await runtime.summarizer.summarizeBatch(params.files ?? []));
+        return;
+      }
+      const file = {
+        url: params.url ?? 'inline-input.js',
+        content: params.code ?? '',
+        size: (params.code ?? '').length,
+        type: 'inline' as const,
+      };
+      append(await runtime.summarizer.summarizeFile(file));
+      return;
+    }
+
+    let code = params.code;
+    if (!code) {
+      const top = runtime.collector.getTopPriorityFiles(params.topN ?? 5);
+      if (top.files.length === 0) {
+        throw new Error('No code provided and no collected files found. Run obs_collect_code first.');
+      }
+      code = top.files.map((file) => `// ${file.url}\n${file.content}`).join('\n\n');
+    }
+
+    const [understand, crypto] = await Promise.all([
+      runtime.analyzer.understand({code, focus: 'security'}),
+      runtime.cryptoDetector.detect({code}),
+    ]);
+
+    const securityRisks = Array.isArray(understand.securityRisks) ? understand.securityRisks : [];
+    const highSeverityCount = securityRisks.filter((risk) => risk.severity === 'critical' || risk.severity === 'high').length;
+    const cryptoResult = crypto as {
+      securityIssues?: unknown[];
+      algorithms?: Array<{name?: string}>;
+    };
+    const cryptoIssues = Array.isArray(cryptoResult.securityIssues) ? cryptoResult.securityIssues : [];
+    const algorithms = Array.isArray(cryptoResult.algorithms) ? cryptoResult.algorithms : [];
+    const dangerousAlgorithms = algorithms.filter((algo) =>
+      ['md5', 'sha1', 'rc4', 'des'].includes(String(algo.name ?? '').toLowerCase()),
+    );
+
+    let hookSignalCount = 0;
+    if (params.includeHookSignals !== false) {
+      if (params.hookId) {
+        hookSignalCount = runtime.hookManager.getRecords(params.hookId).length;
+      } else {
+        hookSignalCount = runtime.hookManager
+          .getAllKnownHookIds()
+          .reduce((sum, hookId) => sum + runtime.hookManager.getRecords(hookId).length, 0);
+      }
+    }
+
+    const rawScore =
+      highSeverityCount * 20 +
+      cryptoIssues.length * 15 +
+      dangerousAlgorithms.length * 10 +
+      Math.min(hookSignalCount, 10) * 2;
+    const score = Math.max(0, Math.min(100, rawScore));
+    const level = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
+
+    append({
+      score,
+      level,
+      factors: {
+        securityRisks: securityRisks.length,
+        highSeverityRisks: highSeverityCount,
+        cryptoAlgorithms: algorithms.length,
+        cryptoIssues: cryptoIssues.length,
+        dangerousAlgorithms: dangerousAlgorithms.map((algo) => algo.name ?? 'unknown'),
+        hookSignals: hookSignalCount,
+      },
+      recommendations: [
+        highSeverityCount > 0 ? 'Prioritize high-severity security findings first.' : null,
+        dangerousAlgorithms.length > 0 ? 'Replace weak crypto algorithms (MD5/SHA1/RC4/DES).' : null,
+        hookSignalCount > 0 ? 'Review hook records to confirm if suspicious paths are expected.' : null,
+      ].filter((item): item is string => Boolean(item)),
+    });
   },
 });
 
@@ -530,18 +577,18 @@ function buildActionPlan(result: {
 
   if (result.signatureHints.candidateFunctions.length > 0) {
     const fnName = result.signatureHints.candidateFunctions[0];
-    addStep(`使用 loc_search_in_scripts 搜索函数名 "${fnName}"，并用 loc_understand_code 深挖调用链`);
+    addStep(`使用 loc_search_in_sources 搜索函数名 "${fnName}"，并用 loc_analyze_code(action=understand) 深挖调用链`);
   } else {
-    addStep('使用 loc_search_in_scripts 搜索关键词 sign/token/auth/nonce，定位签名生成点');
+    addStep('使用 loc_search_in_sources 搜索关键词 sign/token/auth/nonce，定位签名生成点');
   }
 
   if (result.topHookIds.length > 0) {
     addStep(`调用 obs_get_hook_data 查看首个 hook 数据: {"hookId":"${result.topHookIds[0].hookId}"}`);
   } else {
-    addStep('用 ins_create_hook + ins_inject_hook 手工注入 fetch/xhr hook 后再采样');
+    addStep('用 ins_hook(action=create) + ins_hook(action=inject) 手工注入 fetch/xhr hook 后再采样');
   }
 
-  addStep('对疑似签名代码调用 loc_deobfuscate_code（aggressive=true）并复测请求参数变化');
+  addStep('对疑似签名代码调用 loc_analyze_code(action=deobfuscate, aggressive=true)并复测请求参数变化');
   return steps;
 }
 
@@ -955,89 +1002,6 @@ function toMarkdownReport(report: {
     `- Usage: ${report.tokenBudget.usagePercent.toFixed(2)}%`,
   ].join('\n');
 }
-
-export const riskPanel = defineTool({
-  name: 'ver_risk_panel',
-  description: 'Build a combined risk score from analyzer, crypto detector and hook signals.',
-  annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
-  schema: {
-    code: zod.string().optional(),
-    useAI: zod.boolean().optional(),
-    includeHookSignals: zod.boolean().optional(),
-    hookId: zod.string().optional(),
-    topN: zod.number().int().positive().optional(),
-  },
-  handler: async (request, response) => {
-    const runtime = getJSHookRuntime();
-
-    let code = request.params.code;
-    if (!code) {
-      const top = runtime.collector.getTopPriorityFiles(request.params.topN ?? 5);
-      if (top.files.length === 0) {
-        throw new Error('No code provided and no collected files found. Run obs_collect_code first.');
-      }
-      code = top.files.map((file) => `// ${file.url}\n${file.content}`).join('\n\n');
-    }
-
-    const [understand, crypto] = await Promise.all([
-      runtime.analyzer.understand({code, focus: 'security'}),
-      runtime.cryptoDetector.detect({code}),
-    ]);
-
-    const securityRisks = Array.isArray(understand.securityRisks) ? understand.securityRisks : [];
-    const highSeverityCount = securityRisks.filter((risk) => risk.severity === 'critical' || risk.severity === 'high').length;
-    const cryptoResult = crypto as {
-      securityIssues?: unknown[];
-      algorithms?: Array<{name?: string}>;
-    };
-    const cryptoIssues = Array.isArray(cryptoResult.securityIssues) ? cryptoResult.securityIssues : [];
-    const algorithms = Array.isArray(cryptoResult.algorithms) ? cryptoResult.algorithms : [];
-    const dangerousAlgorithms = algorithms.filter((algo) =>
-      ['md5', 'sha1', 'rc4', 'des'].includes(String(algo.name ?? '').toLowerCase()),
-    );
-
-    let hookSignalCount = 0;
-    if (request.params.includeHookSignals !== false) {
-      if (request.params.hookId) {
-        hookSignalCount = runtime.hookManager.getRecords(request.params.hookId).length;
-      } else {
-        hookSignalCount = runtime.hookManager
-          .getAllKnownHookIds()
-          .reduce((sum, hookId) => sum + runtime.hookManager.getRecords(hookId).length, 0);
-      }
-    }
-
-    const rawScore =
-      highSeverityCount * 20 +
-      cryptoIssues.length * 15 +
-      dangerousAlgorithms.length * 10 +
-      Math.min(hookSignalCount, 10) * 2;
-    const score = Math.max(0, Math.min(100, rawScore));
-    const level = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
-
-    const result = {
-      score,
-      level,
-      factors: {
-        securityRisks: securityRisks.length,
-        highSeverityRisks: highSeverityCount,
-        cryptoAlgorithms: algorithms.length,
-        cryptoIssues: cryptoIssues.length,
-        dangerousAlgorithms: dangerousAlgorithms.map((algo) => algo.name ?? 'unknown'),
-        hookSignals: hookSignalCount,
-      },
-      recommendations: [
-        highSeverityCount > 0 ? 'Prioritize high-severity security findings first.' : null,
-        dangerousAlgorithms.length > 0 ? 'Replace weak crypto algorithms (MD5/SHA1/RC4/DES).' : null,
-        hookSignalCount > 0 ? 'Review hook records to confirm if suspicious paths are expected.' : null,
-      ].filter((item): item is string => Boolean(item)),
-    };
-
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify(result, null, 2));
-    response.appendResponseLine('```');
-  },
-});
 
 export const exportSessionReport = defineTool({
   name: 'rec_export_session_report',

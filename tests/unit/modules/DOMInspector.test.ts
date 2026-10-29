@@ -27,7 +27,6 @@ describe('DOMInspector', () => {
       { found: true, nodeName: 'BUTTON', textContent: 'OK' },
       [{ found: true, nodeName: 'DIV' }],
       { tag: 'BODY' },
-      [{ selector: '#submit', text: 'Submit', type: 'button', visible: true }],
       { color: 'rgb(0,0,0)' },
       { found: true, nodeName: 'DIV', textContent: 'ready' },
       [{ found: true, nodeName: 'SPAN', textContent: 'hello' }],
@@ -46,9 +45,6 @@ describe('DOMInspector', () => {
 
     const tree = await inspector.getStructure(2, true);
     assert.deepStrictEqual(tree, { tag: 'BODY' });
-
-    const clickable = await inspector.findClickable('submit');
-    assert.strictEqual(clickable.length, 1);
 
     const style = await inspector.getComputedStyle('#submit');
     assert.strictEqual(style?.color, 'rgb(0,0,0)');
@@ -106,9 +102,6 @@ describe('DOMInspector', () => {
 
     const structure = await inspector.getStructure();
     assert.strictEqual(structure, null);
-
-    const clickable = await inspector.findClickable();
-    assert.deepStrictEqual(clickable, []);
 
     const style = await inspector.getComputedStyle('#none');
     assert.strictEqual(style, null);

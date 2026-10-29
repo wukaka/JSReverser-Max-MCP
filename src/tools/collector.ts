@@ -163,19 +163,25 @@ export const collectionDiff = defineTool({
   },
 });
 
-export const searchInScripts = defineTool({
-  name: 'loc_search_in_scripts',
-  description: 'Search in collected script cache with regex pattern.',
+export const listCollectedScripts = defineTool({
+  name: 'obs_list_collected_scripts',
+  description:
+    'Lists scripts in the collection cache (populated by obs_collect_code), optionally filtered by a regex matched against script URLs. Does not search script content — use loc_search_in_sources for that.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
-    pattern: zod.string(),
+    pattern: zod
+      .string()
+      .optional()
+      .describe(
+        'Regex matched against collected script URLs. When omitted, lists all cached scripts.',
+      ),
     limit: zod.number().int().positive().optional(),
     maxTotalSize: zod.number().int().positive().optional(),
   },
   handler: async (request, response) => {
     const runtime = getJSHookRuntime();
     const result = runtime.collector.getFilesByPattern(
-      request.params.pattern,
+      request.params.pattern ?? '.*',
       request.params.limit,
       request.params.maxTotalSize,
     );

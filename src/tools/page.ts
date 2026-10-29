@@ -196,211 +196,182 @@ export const getPerformanceMetrics = defineTool({
   },
 });
 
-export const saveSessionState = defineTool({
-  name: 'rec_save_session_state',
-  description: 'Save current page session state (cookies/localStorage/sessionStorage) into in-memory snapshot.',
-  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
+export const sessionState = defineTool({
+  name: 'rec_session_state',
+  description:
+    'Manage in-memory page session snapshots (cookies/localStorage/sessionStorage). action=save | restore | list | delete | dump | load.',
+  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
   schema: {
+    action: zod.enum(['save', 'restore', 'list', 'delete', 'dump', 'load']),
     sessionId: zod.string().optional(),
     includeCookies: zod.boolean().optional(),
     includeLocalStorage: zod.boolean().optional(),
     includeSessionStorage: zod.boolean().optional(),
-  },
-  handler: async (request, response) => {
-    ensureCleanupLoop();
-    cleanupExpiredSessions();
-    const runtime = getJSHookRuntime();
-    const page = await runtime.pageController.getPage();
-    const sessionId = request.params.sessionId ?? `session_${Date.now()}`;
-    const includeCookies = request.params.includeCookies !== false;
-    const includeLocalStorage = request.params.includeLocalStorage !== false;
-    const includeSessionStorage = request.params.includeSessionStorage !== false;
-
-    const snapshot: SessionSnapshot = {
-      id: sessionId,
-      savedAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + sessionTtlMs).toISOString(),
-      url: page.url(),
-      title: await page.title(),
-      cookies: includeCookies ? await runtime.pageController.getCookies() : [],
-      localStorage: includeLocalStorage ? await runtime.pageController.getLocalStorage() : {},
-      sessionStorage: includeSessionStorage ? await runtime.pageController.getSessionStorage() : {},
-    };
-    sessionSnapshots.set(sessionId, snapshot);
-
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify({
-      sessionId,
-      savedAt: snapshot.savedAt,
-      url: snapshot.url,
-      title: snapshot.title,
-      counts: {
-        cookies: snapshot.cookies.length,
-        localStorage: Object.keys(snapshot.localStorage).length,
-        sessionStorage: Object.keys(snapshot.sessionStorage).length,
-      },
-    }, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const restoreSessionState = defineTool({
-  name: 'rec_restore_session_state',
-  description: 'Restore a previously saved session snapshot to current page.',
-  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
-  schema: {
-    sessionId: zod.string(),
     navigateToSavedUrl: zod.boolean().optional(),
     clearStorageBeforeRestore: zod.boolean().optional(),
-  },
-  handler: async (request, response) => {
-    ensureCleanupLoop();
-    cleanupExpiredSessions();
-    const runtime = getJSHookRuntime();
-    const snapshot = sessionSnapshots.get(request.params.sessionId);
-    if (!snapshot) {
-      throw new Error(`Session snapshot not found: ${request.params.sessionId}`);
-    }
-
-    if (request.params.navigateToSavedUrl !== false) {
-      await runtime.pageController.navigate(snapshot.url);
-    }
-
-    if (request.params.clearStorageBeforeRestore === true) {
-      await runtime.pageController.clearLocalStorage();
-      await runtime.pageController.clearSessionStorage();
-      await runtime.pageController.clearCookies();
-    }
-
-    if (snapshot.cookies.length > 0) {
-      await runtime.pageController.setCookies(snapshot.cookies);
-    }
-    for (const [key, value] of Object.entries(snapshot.localStorage)) {
-      await runtime.pageController.setLocalStorage(key, value);
-    }
-    for (const [key, value] of Object.entries(snapshot.sessionStorage)) {
-      await runtime.pageController.setSessionStorage(key, value);
-    }
-
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify({
-      sessionId: snapshot.id,
-      restoredAt: new Date().toISOString(),
-      url: snapshot.url,
-      restored: {
-        cookies: snapshot.cookies.length,
-        localStorage: Object.keys(snapshot.localStorage).length,
-        sessionStorage: Object.keys(snapshot.sessionStorage).length,
-      },
-    }, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const listSessionStates = defineTool({
-  name: 'rec_list_session_states',
-  description: 'List all saved session snapshots in memory.',
-  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
-  schema: {},
-  handler: async (_request, response) => {
-    ensureCleanupLoop();
-    const removed = cleanupExpiredSessions();
-    const sessions = Array.from(sessionSnapshots.values()).map((snapshot) => ({
-      sessionId: snapshot.id,
-      savedAt: snapshot.savedAt,
-      url: snapshot.url,
-      title: snapshot.title,
-      counts: {
-        cookies: snapshot.cookies.length,
-        localStorage: Object.keys(snapshot.localStorage).length,
-        sessionStorage: Object.keys(snapshot.sessionStorage).length,
-      },
-      expiresAt: snapshot.expiresAt,
-    }));
-
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify({total: sessions.length, cleanedExpired: removed, sessions}, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const deleteSessionState = defineTool({
-  name: 'rec_delete_session_state',
-  description: 'Delete one in-memory session snapshot by sessionId.',
-  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
-  schema: {
-    sessionId: zod.string(),
-  },
-  handler: async (request, response) => {
-    ensureCleanupLoop();
-    cleanupExpiredSessions();
-    const deleted = sessionSnapshots.delete(request.params.sessionId);
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify({
-      sessionId: request.params.sessionId,
-      deleted,
-      remaining: sessionSnapshots.size,
-    }, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const dumpSessionState = defineTool({
-  name: 'rec_dump_session_state',
-  description: 'Export a saved session snapshot as JSON, optionally writing to a file.',
-  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
-  schema: {
-    sessionId: zod.string(),
     path: zod.string().optional(),
     pretty: zod.boolean().optional(),
     encrypt: zod.boolean().optional(),
-  },
-  handler: async (request, response) => {
-    ensureCleanupLoop();
-    cleanupExpiredSessions();
-    const snapshot = sessionSnapshots.get(request.params.sessionId);
-    if (!snapshot) {
-      throw new Error(`Session snapshot not found: ${request.params.sessionId}`);
-    }
-
-    const pretty = request.params.pretty !== false;
-    const rawJson = JSON.stringify(snapshot, null, pretty ? 2 : 0);
-    const encryptedPayload = request.params.encrypt === true ? encryptText(rawJson) : null;
-    const json = encryptedPayload
-      ? JSON.stringify(encryptedPayload, null, pretty ? 2 : 0)
-      : rawJson;
-    if (request.params.path) {
-      await writeFile(request.params.path, json, 'utf8');
-    }
-
-    response.appendResponseLine('```json');
-    response.appendResponseLine(JSON.stringify({
-      sessionId: snapshot.id,
-      path: request.params.path ?? null,
-      bytes: Buffer.byteLength(json, 'utf8'),
-      encrypted: request.params.encrypt === true,
-      snapshot,
-    }, null, 2));
-    response.appendResponseLine('```');
-  },
-});
-
-export const loadSessionState = defineTool({
-  name: 'rec_load_session_state',
-  description: 'Load a session snapshot from JSON string or file into memory.',
-  annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
-  schema: {
-    sessionId: zod.string().optional(),
-    path: zod.string().optional(),
     snapshotJson: zod.string().optional(),
     overwrite: zod.boolean().optional(),
   },
   handler: async (request, response) => {
     ensureCleanupLoop();
-    cleanupExpiredSessions();
-    const rawJson = request.params.path
-      ? await readFile(request.params.path, 'utf8')
-      : request.params.snapshotJson;
+    const cleanedExpired = cleanupExpiredSessions();
+    const runtime = getJSHookRuntime();
+    const params = request.params;
+
+    if (params.action === 'save') {
+      const page = await runtime.pageController.getPage();
+      const sessionId = params.sessionId ?? `session_${Date.now()}`;
+      const includeCookies = params.includeCookies !== false;
+      const includeLocalStorage = params.includeLocalStorage !== false;
+      const includeSessionStorage = params.includeSessionStorage !== false;
+
+      const snapshot: SessionSnapshot = {
+        id: sessionId,
+        savedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + sessionTtlMs).toISOString(),
+        url: page.url(),
+        title: await page.title(),
+        cookies: includeCookies ? await runtime.pageController.getCookies() : [],
+        localStorage: includeLocalStorage ? await runtime.pageController.getLocalStorage() : {},
+        sessionStorage: includeSessionStorage ? await runtime.pageController.getSessionStorage() : {},
+      };
+      sessionSnapshots.set(sessionId, snapshot);
+
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify({
+        sessionId,
+        savedAt: snapshot.savedAt,
+        url: snapshot.url,
+        title: snapshot.title,
+        counts: {
+          cookies: snapshot.cookies.length,
+          localStorage: Object.keys(snapshot.localStorage).length,
+          sessionStorage: Object.keys(snapshot.sessionStorage).length,
+        },
+      }, null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    if (params.action === 'restore') {
+      const sessionId = params.sessionId;
+      if (!sessionId) {
+        throw new Error('sessionId is required for action=restore.');
+      }
+      const snapshot = sessionSnapshots.get(sessionId);
+      if (!snapshot) {
+        throw new Error(`Session snapshot not found: ${sessionId}`);
+      }
+
+      if (params.navigateToSavedUrl !== false) {
+        await runtime.pageController.navigate(snapshot.url);
+      }
+
+      if (params.clearStorageBeforeRestore === true) {
+        await runtime.pageController.clearLocalStorage();
+        await runtime.pageController.clearSessionStorage();
+        await runtime.pageController.clearCookies();
+      }
+
+      if (snapshot.cookies.length > 0) {
+        await runtime.pageController.setCookies(snapshot.cookies);
+      }
+      for (const [key, value] of Object.entries(snapshot.localStorage)) {
+        await runtime.pageController.setLocalStorage(key, value);
+      }
+      for (const [key, value] of Object.entries(snapshot.sessionStorage)) {
+        await runtime.pageController.setSessionStorage(key, value);
+      }
+
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify({
+        sessionId: snapshot.id,
+        restoredAt: new Date().toISOString(),
+        url: snapshot.url,
+        restored: {
+          cookies: snapshot.cookies.length,
+          localStorage: Object.keys(snapshot.localStorage).length,
+          sessionStorage: Object.keys(snapshot.sessionStorage).length,
+        },
+      }, null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    if (params.action === 'list') {
+      const sessions = Array.from(sessionSnapshots.values()).map((snapshot) => ({
+        sessionId: snapshot.id,
+        savedAt: snapshot.savedAt,
+        url: snapshot.url,
+        title: snapshot.title,
+        counts: {
+          cookies: snapshot.cookies.length,
+          localStorage: Object.keys(snapshot.localStorage).length,
+          sessionStorage: Object.keys(snapshot.sessionStorage).length,
+        },
+        expiresAt: snapshot.expiresAt,
+      }));
+
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify({total: sessions.length, cleanedExpired, sessions}, null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    if (params.action === 'delete') {
+      const sessionId = params.sessionId;
+      if (!sessionId) {
+        throw new Error('sessionId is required for action=delete.');
+      }
+      const deleted = sessionSnapshots.delete(sessionId);
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify({
+        sessionId,
+        deleted,
+        remaining: sessionSnapshots.size,
+      }, null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    if (params.action === 'dump') {
+      const sessionId = params.sessionId;
+      if (!sessionId) {
+        throw new Error('sessionId is required for action=dump.');
+      }
+      const snapshot = sessionSnapshots.get(sessionId);
+      if (!snapshot) {
+        throw new Error(`Session snapshot not found: ${sessionId}`);
+      }
+
+      const pretty = params.pretty !== false;
+      const rawJson = JSON.stringify(snapshot, null, pretty ? 2 : 0);
+      const encryptedPayload = params.encrypt === true ? encryptText(rawJson) : null;
+      const json = encryptedPayload
+        ? JSON.stringify(encryptedPayload, null, pretty ? 2 : 0)
+        : rawJson;
+      if (params.path) {
+        await writeFile(params.path, json, 'utf8');
+      }
+
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify({
+        sessionId: snapshot.id,
+        path: params.path ?? null,
+        bytes: Buffer.byteLength(json, 'utf8'),
+        encrypted: params.encrypt === true,
+        snapshot,
+      }, null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    const rawJson = params.path
+      ? await readFile(params.path, 'utf8')
+      : params.snapshotJson;
     if (!rawJson) {
       throw new Error('Either path or snapshotJson must be provided.');
     }
@@ -417,10 +388,10 @@ export const loadSessionState = defineTool({
       && (parsed as any).algorithm === 'aes-256-gcm'
       ? JSON.parse(decryptText(parsed as any))
       : parsed;
-    const snapshot = normalizeSnapshot(normalizedRaw, request.params.sessionId);
-    const targetId = request.params.sessionId ?? snapshot.id;
+    const snapshot = normalizeSnapshot(normalizedRaw, params.sessionId);
+    const targetId = params.sessionId ?? snapshot.id;
     const existing = sessionSnapshots.has(targetId);
-    if (existing && request.params.overwrite !== true) {
+    if (existing && params.overwrite !== true) {
       throw new Error(`Session snapshot already exists: ${targetId}. Set overwrite=true to replace.`);
     }
 

@@ -14,6 +14,7 @@ import type {PaginationOptions} from '../utils/types.js';
 import type {WebSocketData} from '../WebSocketCollector.js';
 
 import type {ToolCategory} from './categories.js';
+import {TOOL_PARAM_DOCS} from './paramDocs.js';
 
 export interface ToolDefinition<
   Schema extends zod.ZodRawShape = zod.ZodRawShape,
@@ -70,7 +71,7 @@ export interface Response {
     },
   ): void;
   attachImage(value: ImageContentData): void;
-  attachNetworkRequest(reqid: number): void;
+  attachNetworkRequest(reqid: number, options?: {includeBody?: boolean}): void;
   attachConsoleMessage(msgid: number): void;
   // WebSocket methods
   setIncludeWebSocketConnections(
@@ -163,6 +164,19 @@ export type Context = Readonly<{
 export function defineTool<Schema extends zod.ZodRawShape>(
   definition: ToolDefinition<Schema>,
 ) {
+  const docs = TOOL_PARAM_DOCS[definition.name];
+  if (docs) {
+    const schema = definition.schema as unknown as Record<
+      string,
+      zod.ZodTypeAny
+    >;
+    for (const [param, text] of Object.entries(docs)) {
+      const field = schema[param];
+      if (field && !field.description) {
+        schema[param] = field.describe(text);
+      }
+    }
+  }
   return definition;
 }
 

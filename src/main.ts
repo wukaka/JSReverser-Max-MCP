@@ -26,13 +26,18 @@ import * as consoleTools from './tools/console.js';
 import * as debuggerTools from './tools/debugger.js';
 import * as jshookDomTools from './tools/dom.js';
 import * as frameTools from './tools/frames.js';
+import * as guideTools from './tools/guide.js';
 import * as jshookHookTools from './tools/hook.js';
 import * as networkTools from './tools/network.js';
+import * as networkAdvancedTools from './tools/network-advanced.js';
 import * as jshookPageTools from './tools/page.js';
 import * as pagesTools from './tools/pages.js';
 import * as jshookRebuildTools from './tools/rebuild.js';
 import {getJSHookRuntime} from './tools/runtime.js';
 import * as screenshotTools from './tools/screenshot.js';
+import * as signerTools from './tools/signer.js';
+import * as signerTraceTools from './tools/signer-trace.js';
+import * as taskTools from './tools/task.js';
 import * as scriptTools from './tools/script.js';
 import * as jshookStealthTools from './tools/stealth.js';
 import type {ToolDefinition} from './tools/ToolDefinition.js';
@@ -212,6 +217,11 @@ const toolSources: Array<{source: string; tools: ToolDefinition[]}> = [
   {source: 'debugger', tools: asTools(debuggerTools)},
   {source: 'frames', tools: asTools(frameTools)},
   {source: 'network', tools: asTools(networkTools)},
+  {source: 'signer', tools: asTools(signerTools)},
+  {source: 'signerTrace', tools: asTools(signerTraceTools)},
+  {source: 'guide', tools: asTools(guideTools)},
+  {source: 'task', tools: asTools(taskTools)},
+  {source: 'networkAdvanced', tools: asTools(networkAdvancedTools)},
   {source: 'pages', tools: asTools(pagesTools)},
   {source: 'screenshot', tools: asTools(screenshotTools)},
   {source: 'script', tools: asTools(scriptTools)},

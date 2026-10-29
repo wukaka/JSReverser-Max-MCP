@@ -11,17 +11,17 @@ import fc from 'fast-check';
 
 
 import {zod} from '../../src/third_party/index.js';
-import {summarizeCode} from '../../src/tools/analyzer.js';
+import {analyzeCode} from '../../src/tools/analyzer.js';
 import {collectCode} from '../../src/tools/collector.js';
 import {queryDom} from '../../src/tools/dom.js';
-import {createHook} from '../../src/tools/hook.js';
+import {hook} from '../../src/tools/debugger.js';
 import {clickElement} from '../../src/tools/page.js';
-import {injectStealth} from '../../src/tools/stealth.js';
+import {stealth} from '../../src/tools/stealth.js';
 
 const collectSchema = zod.object(collectCode.schema);
-const summarizeSchema = zod.object(summarizeCode.schema);
-const hookSchema = zod.object(createHook.schema);
-const stealthSchema = zod.object(injectStealth.schema);
+const summarizeSchema = zod.object(analyzeCode.schema);
+const hookSchema = zod.object(hook.schema);
+const stealthSchema = zod.object(stealth.schema);
 const domSchema = zod.object(queryDom.schema);
 const pageSchema = zod.object(clickElement.schema);
 
@@ -43,7 +43,7 @@ describe('JSHook tool properties', () => {
   it('Property 10: summarization mode support', () => {
     fc.assert(
       fc.property(fc.constantFrom('single', 'batch', 'project'), mode => {
-        const parsed = summarizeSchema.parse({mode});
+        const parsed = summarizeSchema.parse({action: 'summarize', mode});
         assert.strictEqual(parsed.mode, mode);
       }),
     );
@@ -54,7 +54,7 @@ describe('JSHook tool properties', () => {
       fc.property(
         fc.constantFrom('function', 'fetch', 'xhr', 'property', 'cookie', 'websocket', 'eval', 'timer'),
         type => {
-          const parsed = hookSchema.parse({type});
+          const parsed = hookSchema.parse({action: 'create', type});
           assert.strictEqual(parsed.type, type);
         },
       ),
@@ -66,7 +66,7 @@ describe('JSHook tool properties', () => {
       fc.property(
         fc.constantFrom('windows-chrome', 'mac-chrome', 'mac-safari', 'linux-chrome', 'windows-edge'),
         preset => {
-          const parsed = stealthSchema.parse({preset});
+          const parsed = stealthSchema.parse({action: 'inject', preset});
           assert.strictEqual(parsed.preset, preset);
         },
       ),

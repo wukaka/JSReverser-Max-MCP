@@ -7,7 +7,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { getNetworkRequest, listNetworkRequests } from '../../../src/tools/network.js';
-import { listPages, navigatePage, newPage, selectPage } from '../../../src/tools/pages.js';
+import { navigatePage, page as pageTool } from '../../../src/tools/pages.js';
 import { getJSHookRuntime } from '../../../src/tools/runtime.js';
 import { screenshot } from '../../../src/tools/screenshot.js';
 import { evaluateScript } from '../../../src/tools/script.js';
@@ -163,14 +163,14 @@ describe('tools extended coverage', () => {
     };
 
     try {
-      await listPages.handler({ params: {} }, response as unknown as Parameters<typeof listPages.handler>[1], context as unknown as Parameters<typeof listPages.handler>[2]);
+      await pageTool.handler({ params: { action: 'list' } }, response as unknown as Parameters<typeof pageTool.handler>[1], context as unknown as Parameters<typeof pageTool.handler>[2]);
       assert.strictEqual(response.state.includePages, true);
 
-      await selectPage.handler({ params: { pageIdx: 0 } }, response as unknown as Parameters<typeof selectPage.handler>[1], context as unknown as Parameters<typeof selectPage.handler>[2]);
+      await pageTool.handler({ params: { action: 'select', pageIdx: 0 } }, response as unknown as Parameters<typeof pageTool.handler>[1], context as unknown as Parameters<typeof pageTool.handler>[2]);
       assert.strictEqual(selected.idx, 2);
       assert.deepStrictEqual(syncedPages, [page]);
 
-      await newPage.handler({ params: { url: 'https://a.com' } }, response as unknown as Parameters<typeof newPage.handler>[1], context as unknown as Parameters<typeof newPage.handler>[2]);
+      await pageTool.handler({ params: { action: 'new', url: 'https://a.com' } }, response as unknown as Parameters<typeof pageTool.handler>[1], context as unknown as Parameters<typeof pageTool.handler>[2]);
       assert.strictEqual(response.state.includePages, true);
 
       await assert.rejects(async () => {

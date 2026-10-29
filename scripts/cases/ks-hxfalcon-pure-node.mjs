@@ -92,7 +92,7 @@ Observe Phase:
      one stable caller stack for the falcon sign path.
 
 3) Capture write point and VM interaction:
-   - First use: \`ins_hook_function\` / \`ins_create_hook\`
+   - First use: \`ins_hook\` / \`ins_hook\`
    - Collect:
      payload before encode, callback wiring, cat-version reads, final request send timing.
    - Output:

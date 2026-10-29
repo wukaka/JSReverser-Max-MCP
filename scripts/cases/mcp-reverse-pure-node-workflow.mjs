@@ -33,7 +33,7 @@ Required workflow:
      one confirmed initiator chain from network request back to business/runtime code.
 
 3) Write-point capture:
-   - First use: \`ins_hook_function\` or \`ins_create_hook\`
+   - First use: \`ins_hook\` or \`ins_hook\`
    - Common hooks:
      \`fetch\`, \`XMLHttpRequest.prototype.open\`, \`XMLHttpRequest.prototype.send\`,
      \`URLSearchParams.prototype.append\`, \`URLSearchParams.prototype.set\`
@@ -46,7 +46,7 @@ Required workflow:
 4) Source correlation:
    - First use: \`loc_search_in_sources\`
    - Then use: \`loc_get_script_source\` or \`obs_collect_code\`
-   - Optional: \`loc_understand_code\`, \`loc_summarize_code\`
+   - Optional: \`loc_analyze_code\`, \`loc_analyze_code\`
    - Collect:
      candidate function bodies, loader chain, security script URLs, dynamic dependency order.
    - Output:
@@ -112,9 +112,9 @@ Tool routing rules:
 - Want target request? Use \`obs_list_network_requests\`
 - Want exact request details? Use \`obs_get_network_request\`
 - Want caller stack? Use \`loc_get_request_initiator\`
-- Want parameter write point? Use \`ins_hook_function\` / \`ins_create_hook\` + \`obs_get_hook_data\`
+- Want parameter write point? Use \`ins_hook\` / \`ins_hook\` + \`obs_get_hook_data\`
 - Want source location? Use \`loc_search_in_sources\` / \`loc_get_script_source\`
-- Want code summary? Use \`obs_collect_code\` / \`loc_summarize_code\`
+- Want code summary? Use \`obs_collect_code\` / \`loc_analyze_code\`
 - Want durable timeline? Use \`rec_record_reverse_evidence\`
 - Want local reproducibility? Move to \`artifacts/tasks/<task-id>/run/\`
 

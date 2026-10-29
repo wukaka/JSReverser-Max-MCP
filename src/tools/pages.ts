@@ -13,8 +13,8 @@ import {defineTool, timeoutSchema} from './ToolDefinition.js';
 // Default navigation timeout in milliseconds (10 seconds)
 const DEFAULT_NAV_TIMEOUT = 10000;
 
-export const listPages = defineTool({
-  name: 'nav_list_pages',
+const listPagesTool = defineTool({
+  name: 'nav_page(action=list)',
   description: `Get a list of pages open in the browser.`,
   annotations: {
     category: ToolCategory.NAVIGATION,
@@ -26,8 +26,8 @@ export const listPages = defineTool({
   },
 });
 
-export const selectPage = defineTool({
-  name: 'nav_select_page',
+const selectPageTool = defineTool({
+  name: 'nav_page(action=select)',
   description: `Select a page as a context for future tool calls.`,
   annotations: {
     category: ToolCategory.NAVIGATION,
@@ -37,7 +37,7 @@ export const selectPage = defineTool({
     pageIdx: zod
       .number()
       .describe(
-        'The index of the page to select. Call nav_list_pages to list pages.',
+        'The index of the page to select. Call nav_page(action=list) to list pages.',
       ),
   },
   handler: async (request, response, context) => {
@@ -49,8 +49,8 @@ export const selectPage = defineTool({
   },
 });
 
-export const newPage = defineTool({
-  name: 'nav_new_page',
+const newPageTool = defineTool({
+  name: 'nav_page(action=new)',
   description: `Creates a new page and navigates to the specified URL. Waits for DOMContentLoaded event (not full page load). Default timeout is 10 seconds.`,
   annotations: {
     category: ToolCategory.NAVIGATION,
@@ -177,5 +177,49 @@ export const navigatePage = defineTool({
     });
 
     response.setIncludePages(true);
+  },
+});
+
+/**
+ * Unified page context management.
+ */
+export const page = defineTool({
+  name: 'nav_page',
+  description:
+    'Manages pages: action=list lists open pages; action=select selects one by index; action=new opens a new page at a URL.',
+  annotations: {
+    category: ToolCategory.NAVIGATION,
+    readOnlyHint: false,
+  },
+  schema: {
+    action: zod.enum(['list', 'select', 'new']),
+    pageIdx: zod.number().optional().describe('For action=select: page index from action=list.'),
+    url: zod.string().optional().describe('For action=new: URL to load.'),
+    ...timeoutSchema,
+  },
+  handler: async (request, response, context) => {
+    const params = request.params;
+
+    if (params.action === 'list') {
+      await listPagesTool.handler({params: {}}, response, context);
+      return;
+    }
+
+    if (params.action === 'select') {
+      if (params.pageIdx === undefined) {
+        throw new Error('pageIdx is required for action=select.');
+      }
+      await selectPageTool.handler({params: {pageIdx: params.pageIdx}}, response, context);
+      return;
+    }
+
+    if (!params.url) {
+      throw new Error('url is required for action=new.');
+    }
+    await newPageTool.handler(
+      {params: {url: params.url, timeout: params.timeout}},
+      response,
+      context,
+    );
   },
 });

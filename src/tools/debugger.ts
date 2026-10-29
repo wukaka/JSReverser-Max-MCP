@@ -21,7 +21,7 @@ import {getJSHookRuntime} from './runtime.js';
 import {defineTool} from './ToolDefinition.js';
 
 const BREAKPOINT_STALL_HINT =
-  'If execution appears stuck: run ins_resume first. If it keeps pausing at the same location, ins_remove_breakpoint and switch to loc_trace_function(pause=false) or ins_hook_function.';
+  'If execution appears stuck: run ins_debug_control(action=resume) first. If it keeps pausing at the same location, ins_breakpoint(action=remove) and switch to loc_trace_function(pause=false) or ins_hook(action=function).';
 
 function formatUrlWithSourceMap(url: string, sourceMapURL?: string): string {
   return sourceMapURL ? `${url} [SourceMap: ${sourceMapURL}]` : url;
@@ -421,7 +421,7 @@ export const findInScript = defineTool({
       response.appendResponseLine('```');
       response.appendResponseLine('');
       response.appendResponseLine(
-        `To set a breakpoint here: ins_set_breakpoint(url: "${url}", lineNumber: ${lineNumber + 1}, columnNumber: ${columnNumber})`,
+        `To set a breakpoint here: ins_breakpoint(action=set)(url: "${url}", lineNumber: ${lineNumber + 1}, columnNumber: ${columnNumber})`,
       );
     } catch (error) {
       response.appendResponseLine(
@@ -615,10 +615,10 @@ export const searchInSources = defineTool({
 /**
  * Set a breakpoint in a script.
  */
-export const setBreakpoint = defineTool({
-  name: 'ins_set_breakpoint',
+const setBreakpointTool = defineTool({
+  name: 'ins_breakpoint(action=set)',
   description:
-    'Sets a breakpoint in a JavaScript file at the specified line. The breakpoint will trigger when the code executes. NOTE: Prefer ins_hook_function or ins_create_hook for monitoring function calls — breakpoints require ins_pause/ins_resume coordination and are error-prone in automated workflows. Use breakpoints only when you need to inspect local variables inside a function.',
+    'Sets a breakpoint in a JavaScript file at the specified line. The breakpoint will trigger when the code executes. NOTE: Prefer ins_hook for monitoring function calls — breakpoints require ins_debug_control(action=pause)/ins_debug_control(action=resume) coordination and are error-prone in automated workflows. Use breakpoints only when you need to inspect local variables inside a function.',
   annotations: {
     title: 'Set Breakpoint',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -709,10 +709,10 @@ export const setBreakpoint = defineTool({
 /**
  * Remove a breakpoint.
  */
-export const removeBreakpoint = defineTool({
-  name: 'ins_remove_breakpoint',
+const removeBreakpointTool = defineTool({
+  name: 'ins_breakpoint(action=remove)',
   description:
-    'Removes a breakpoint by its ID. Use ins_list_breakpoints to see active breakpoints.',
+    'Removes a breakpoint by its ID. Use ins_breakpoint(action=list) to see active breakpoints.',
   annotations: {
     title: 'Remove Breakpoint',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -722,7 +722,7 @@ export const removeBreakpoint = defineTool({
     breakpointId: zod
       .string()
       .describe(
-        'The breakpoint ID to remove (from ins_list_breakpoints or ins_set_breakpoint).',
+        'The breakpoint ID to remove (from ins_breakpoint(action=list) or ins_breakpoint(action=set)).',
       ),
   },
   handler: async (request, response, context) => {
@@ -753,8 +753,8 @@ export const removeBreakpoint = defineTool({
 /**
  * List all active breakpoints.
  */
-export const listBreakpoints = defineTool({
-  name: 'ins_list_breakpoints',
+const listBreakpointsTool = defineTool({
+  name: 'ins_breakpoint(action=list)',
   description: 'Lists all active breakpoints in the current debugging session.',
   annotations: {
     title: 'List Breakpoints',
@@ -991,7 +991,7 @@ export const getPausedInfo = defineTool({
         `Auto-recovery detected: breakpoint ${autoRecovery.breakpointId} hit ${autoRecovery.hitCount} times in a short window.`,
       );
       response.appendResponseLine(
-        `Suggestion: move breakpoint to a lower-frequency path or use ins_hook_function/loc_trace_function(pause=false).`,
+        `Suggestion: move breakpoint to a lower-frequency path or use ins_hook/loc_trace_function(pause=false).`,
       );
       if (autoRecovery.error) {
         response.appendResponseLine(`Recovery warning: ${autoRecovery.error}`);
@@ -1068,7 +1068,7 @@ export const getPausedInfo = defineTool({
     }
 
     response.appendResponseLine(
-      '\n💡 Use ins_resume, ins_step_over, ins_step_into, or ins_step_out to continue.',
+      '\n💡 Use ins_debug_control(action=resume), ins_debug_control(action=step_over), ins_debug_control(action=step_into), or ins_debug_control(action=step_out) to continue.',
     );
   },
 });
@@ -1076,8 +1076,8 @@ export const getPausedInfo = defineTool({
 /**
  * Resume execution after a breakpoint.
  */
-export const resume = defineTool({
-  name: 'ins_resume',
+const resumeTool = defineTool({
+  name: 'ins_debug_control(action=resume)',
   description:
     'Resumes JavaScript execution after being paused at a breakpoint. Execution continues until the next breakpoint or completion.',
   annotations: {
@@ -1115,8 +1115,8 @@ export const resume = defineTool({
 /**
  * Pause execution.
  */
-export const pause = defineTool({
-  name: 'ins_pause',
+const pauseTool = defineTool({
+  name: 'ins_debug_control(action=pause)',
   description:
     'Pauses JavaScript execution at the current point. Use this to interrupt running code.',
   annotations: {
@@ -1156,8 +1156,8 @@ export const pause = defineTool({
 /**
  * Step over to the next statement.
  */
-export const stepOver = defineTool({
-  name: 'ins_step_over',
+const stepOverTool = defineTool({
+  name: 'ins_debug_control(action=step_over)',
   description:
     'Steps over to the next statement, treating function calls as a single step. Use this to move through code without entering function bodies.',
   annotations: {
@@ -1197,8 +1197,8 @@ export const stepOver = defineTool({
 /**
  * Step into the next function call.
  */
-export const stepInto = defineTool({
-  name: 'ins_step_into',
+const stepIntoTool = defineTool({
+  name: 'ins_debug_control(action=step_into)',
   description:
     'Steps into the next function call. Use this to enter and debug function bodies.',
   annotations: {
@@ -1238,8 +1238,8 @@ export const stepInto = defineTool({
 /**
  * Step out of the current function.
  */
-export const stepOut = defineTool({
-  name: 'ins_step_out',
+const stepOutTool = defineTool({
+  name: 'ins_debug_control(action=step_out)',
   description:
     'Steps out of the current function, continuing until the function returns. Use this to quickly exit a function.',
   annotations: {
@@ -1372,10 +1372,10 @@ export const evaluateOnCallframe = defineTool({
  * Set a breakpoint on specific code text (function name, statement, etc.)
  * Combines search + locate + set breakpoint in one step.
  */
-export const setBreakpointOnText = defineTool({
-  name: 'ins_set_breakpoint_on_text',
+const setBreakpointOnTextTool = defineTool({
+  name: 'ins_breakpoint(action=set_text)',
   description:
-    'Sets a breakpoint on specific code (function name, statement, etc.) by searching for it and automatically determining the exact position. Works with both normal and minified files. NOTE: Prefer ins_hook_function for monitoring function calls — it captures args/results without pausing execution. Use this only when you need to inspect local variables at a specific code location.',
+    'Sets a breakpoint on specific code (function name, statement, etc.) by searching for it and automatically determining the exact position. Works with both normal and minified files. NOTE: Prefer ins_hook for monitoring function calls — it captures args/results without pausing execution. Use this only when you need to inspect local variables at a specific code location.',
   annotations: {
     title: 'Set Breakpoint on Text',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -1526,47 +1526,128 @@ export const setBreakpointOnText = defineTool({
 });
 
 /**
- * Hook a function to monitor its calls and return values.
+ * Create, list, remove, or inject hooks.
  */
-export const hookFunction = defineTool({
-  name: 'ins_hook_function',
+export const hook = defineTool({
+  name: 'ins_hook',
   description:
-    'RECOMMENDED for reverse engineering: Hooks a JavaScript function to log its calls, arguments, and return values without pausing execution. More reliable than breakpoints for automated workflows. Use this as the default approach for monitoring functions.',
+    'Manages hooks. action=function hooks a JS function and logs calls/args/results; action=create builds a declarative hook (fetch/xhr/function/property/cookie/websocket/eval/timer); action=list shows active hooks; action=remove removes one; action=inject injects an existing hook script.',
   annotations: {
-    title: 'Hook Function',
+    title: 'Hook',
     category: ToolCategory.REVERSE_ENGINEERING,
     readOnlyHint: false,
   },
   schema: {
-    target: zod
-      .string()
-      .describe(
-        'The function to hook. Can be: global function name ("fetch"), object method ("XMLHttpRequest.prototype.open"), or path ("window.app.api.request").',
-      ),
-    logArgs: zod
-      .boolean()
-      .optional()
-      .default(true)
-      .describe('Whether to log function arguments (default: true).'),
-    logResult: zod
-      .boolean()
-      .optional()
-      .default(true)
-      .describe('Whether to log return value (default: true).'),
-    logStack: zod
-      .boolean()
-      .optional()
-      .default(false)
-      .describe('Whether to log call stack (default: false).'),
-    hookId: zod
-      .string()
-      .optional()
-      .describe(
-        'Custom identifier for this hook. Used to unhook later. Defaults to target name.',
-      ),
+    action: zod.enum(['function', 'create', 'list', 'remove', 'inject']),
+    hookId: zod.string().optional().describe('Hook id. For action=function it defaults to the target name.'),
+    target: zod.string().optional().describe('For action=function: global function name, object method ("XMLHttpRequest.prototype.open"), or path ("window.app.api.request").'),
+    type: zod.string().optional().describe('For action=create: fetch/xhr/function/property/cookie/websocket/eval/timer.'),
+    params: zod.record(zod.string(), zod.unknown()).optional().describe('For action=create: hook type parameters.'),
+    description: zod.string().optional().describe('For action=create: human-readable description.'),
+    hookAction: zod.enum(['log', 'block', 'modify', 'passthrough']).optional().describe('For action=create: behavior.'),
+    logArgs: zod.boolean().optional().describe('For action=function: log arguments (default: true).'),
+    logResult: zod.boolean().optional().describe('For action=function: log return value (default: true).'),
+    logStack: zod.boolean().optional().describe('For action=function: log call stack (default: false).'),
   },
   handler: async (request, response, context) => {
-    const {target, logArgs, logResult, logStack, hookId} = request.params;
+    const runtime = getJSHookRuntime();
+
+    if (request.params.action === 'create') {
+      if (!request.params.type) {
+        throw new Error('type is required for action=create.');
+      }
+      const result = runtime.hookManager.create({
+        type: request.params.type,
+        params: request.params.params,
+        description: request.params.description,
+        action: request.params.hookAction,
+      });
+      response.appendResponseLine('```json');
+      response.appendResponseLine(JSON.stringify(result, null, 2));
+      response.appendResponseLine('```');
+      return;
+    }
+
+    if (request.params.action === 'inject') {
+      const hookId = request.params.hookId;
+      if (!hookId) {
+        throw new Error('hookId is required for action=inject.');
+      }
+      const existing = runtime.hookManager.getHook(hookId);
+      if (!existing) {
+        throw new Error(`Hook not found: ${hookId}`);
+      }
+      await runtime.pageController.injectScript(existing.script);
+      response.appendResponseLine(`Hook injected: ${existing.hookId}`);
+      return;
+    }
+
+    if (request.params.action === 'list') {
+      try {
+        const pageHooks = (await context.getSelectedFrame().evaluate(`
+(function() {
+  if (!window.__mcp_hooks__) return [];
+  return Object.keys(window.__mcp_hooks__).map(id => {
+    const hook = window.__mcp_hooks__[id];
+    return { id, target: hook.obj.constructor.name + '.' + hook.methodName };
+  });
+})();
+`)) as Array<{ id: string; target: string }>;
+        const managerHooks = runtime.hookManager.getAllHooks();
+        if (pageHooks.length === 0 && managerHooks.length === 0) {
+          response.appendResponseLine('No active hooks.');
+        } else {
+          response.appendResponseLine(`Active hooks (${pageHooks.length + managerHooks.length}):\n`);
+          for (const entry of pageHooks) {
+            response.appendResponseLine(`- ${entry.id}: ${entry.target}`);
+          }
+          for (const meta of managerHooks) {
+            response.appendResponseLine(
+              `- ${meta.hookId}: ${meta.type}${meta.description ? ` (${meta.description})` : ''}`,
+            );
+          }
+        }
+      } catch (error) {
+        response.appendResponseLine(
+          `Error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      return;
+    }
+
+    if (request.params.action === 'remove') {
+      const hookId = request.params.hookId;
+      if (!hookId) {
+        throw new Error('hookId is required for action=remove.');
+      }
+      const removedFromManager = runtime.hookManager.remove(hookId);
+      try {
+        const result = (await context.getSelectedFrame().evaluate(`
+(function() {
+  const hookId = ${JSON.stringify(hookId)};
+  if (!window.__mcp_hooks__ || !window.__mcp_hooks__[hookId]) return { success: false };
+  const { obj, methodName, original } = window.__mcp_hooks__[hookId];
+  obj[methodName] = original;
+  delete window.__mcp_hooks__[hookId];
+  return { success: true };
+})();
+`)) as { success?: boolean };
+        response.appendResponseLine(
+          removedFromManager || result?.success ? 'Hook removed.' : 'Hook not found.',
+        );
+      } catch (error) {
+        response.appendResponseLine(
+          `Error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      return;
+    }
+
+    const {logArgs = true, logResult = true, logStack = false, hookId} = request.params;
+    const target = request.params.target;
+    if (!target) {
+      throw new Error('target is required for action=function.');
+    }
     const id = hookId || target.replace(/[^a-zA-Z0-9]/g, '_');
 
     // Split target into object path and method
@@ -1743,117 +1824,13 @@ export const hookFunction = defineTool({
             'Function calls will be logged to console. Use obs_list_console_messages to view.',
           );
           response.appendResponseLine(
-            `Use ins_unhook_function(hookId: "${id}") to remove.`,
+            `Use ins_hook(action: "remove", hookId: "${id}") to remove.`,
           );
         } else {
           response.appendResponseLine(
             `❌ ${(result as {message: string}).message}`,
           );
         }
-      }
-    } catch (error) {
-      response.appendResponseLine(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  },
-});
-
-/**
- * Remove a function hook.
- */
-export const unhookFunction = defineTool({
-  name: 'ins_unhook_function',
-  description: 'Removes a previously installed function hook.',
-  annotations: {
-    title: 'Unhook Function',
-    category: ToolCategory.REVERSE_ENGINEERING,
-    readOnlyHint: false,
-  },
-  schema: {
-    hookId: zod
-      .string()
-      .describe('The hook ID to remove (from ins_hook_function).'),
-  },
-  handler: async (request, response, context) => {
-    const {hookId} = request.params;
-
-    const unhookCode = `
-(function() {
-  const hookId = ${JSON.stringify(hookId)};
-  if (!window.__mcp_hooks__ || !window.__mcp_hooks__[hookId]) {
-    return { success: false, message: 'Hook not found: ' + hookId };
-  }
-
-  const { obj, methodName, original } = window.__mcp_hooks__[hookId];
-  obj[methodName] = original;
-  delete window.__mcp_hooks__[hookId];
-
-  return { success: true };
-})();
-`;
-
-    try {
-      const frame = context.getSelectedFrame();
-      const result = await frame.evaluate(unhookCode);
-
-      if (result && typeof result === 'object') {
-        if ((result as {success: boolean}).success) {
-          response.appendResponseLine(
-            `✅ Hook "${hookId}" removed successfully.`,
-          );
-        } else {
-          response.appendResponseLine(
-            `❌ ${(result as {message: string}).message}`,
-          );
-        }
-      }
-    } catch (error) {
-      response.appendResponseLine(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  },
-});
-
-/**
- * List all active hooks.
- */
-export const listHooks = defineTool({
-  name: 'ins_list_hooks',
-  description: 'Lists all active function hooks.',
-  annotations: {
-    title: 'List Hooks',
-    category: ToolCategory.REVERSE_ENGINEERING,
-    readOnlyHint: true,
-  },
-  schema: {},
-  handler: async (request, response, context) => {
-    const listCode = `
-(function() {
-  if (!window.__mcp_hooks__) return [];
-  return Object.keys(window.__mcp_hooks__).map(id => {
-    const hook = window.__mcp_hooks__[id];
-    return { id, target: hook.obj.constructor.name + '.' + hook.methodName };
-  });
-})();
-`;
-
-    try {
-      const frame = context.getSelectedFrame();
-      const hooks = (await frame.evaluate(listCode)) as Array<{
-        id: string;
-        target: string;
-      }>;
-
-      if (!hooks || hooks.length === 0) {
-        response.appendResponseLine('No active hooks.');
-        return;
-      }
-
-      response.appendResponseLine(`Active hooks (${hooks.length}):\n`);
-      for (const hook of hooks) {
-        response.appendResponseLine(`- ${hook.id}: ${hook.target}`);
       }
     } catch (error) {
       response.appendResponseLine(
@@ -2117,18 +2094,18 @@ export const getStorage = defineTool({
 });
 
 /**
- * Set XHR/Fetch breakpoint.
+ * Set or remove an XHR/Fetch breakpoint.
  */
-export const breakOnXhr = defineTool({
-  name: 'ins_break_on_xhr',
-  description:
-    'Sets a breakpoint that triggers when an XHR/Fetch request URL contains the specified string.',
+export const xhrBreakpoint = defineTool({
+  name: 'ins_xhr_breakpoint',
+  description: 'Sets or removes an XHR/Fetch breakpoint that matches a URL substring.',
   annotations: {
-    title: 'Break on XHR',
+    title: 'XHR Breakpoint',
     category: ToolCategory.REVERSE_ENGINEERING,
     readOnlyHint: false,
   },
   schema: {
+    action: zod.enum(['set', 'remove']),
     url: zod.string().describe('URL pattern to break on (partial match).'),
   },
   handler: async (request, response, context) => {
@@ -2141,7 +2118,7 @@ export const breakOnXhr = defineTool({
       return;
     }
 
-    const {url} = request.params;
+    const {action, url} = request.params;
     const client = debugger_.getClient();
 
     if (!client) {
@@ -2150,13 +2127,18 @@ export const breakOnXhr = defineTool({
     }
 
     try {
-      await client.send('DOMDebugger.setXHRBreakpoint', {url});
-      response.appendResponseLine(
-        `✅ XHR breakpoint set for URLs containing: "${url}"`,
-      );
-      response.appendResponseLine(
-        'Debugger will pause when a matching XHR/Fetch request is made.',
-      );
+      if (action === 'set') {
+        await client.send('DOMDebugger.setXHRBreakpoint', {url});
+        response.appendResponseLine(
+          `✅ XHR breakpoint set for URLs containing: "${url}"`,
+        );
+        response.appendResponseLine(
+          'Debugger will pause when a matching XHR/Fetch request is made.',
+        );
+      } else {
+        await client.send('DOMDebugger.removeXHRBreakpoint', {url});
+        response.appendResponseLine(`✅ XHR breakpoint removed for: "${url}"`);
+      }
     } catch (error) {
       response.appendResponseLine(
         `Error: ${error instanceof Error ? error.message : String(error)}`,
@@ -2166,65 +2148,22 @@ export const breakOnXhr = defineTool({
 });
 
 /**
- * Remove XHR/Fetch breakpoint.
- */
-export const removeXhrBreakpoint = defineTool({
-  name: 'ins_remove_xhr_breakpoint',
-  description: 'Removes an XHR/Fetch breakpoint.',
-  annotations: {
-    title: 'Remove XHR Breakpoint',
-    category: ToolCategory.REVERSE_ENGINEERING,
-    readOnlyHint: false,
-  },
-  schema: {
-    url: zod.string().describe('The URL pattern to remove breakpoint for.'),
-  },
-  handler: async (request, response, context) => {
-    const debugger_ = context.debuggerContext;
-
-    if (!debugger_.isEnabled()) {
-      response.appendResponseLine(
-        'Debugger is not enabled. Please select a page first.',
-      );
-      return;
-    }
-
-    const {url} = request.params;
-    const client = debugger_.getClient();
-
-    if (!client) {
-      response.appendResponseLine('Debugger client not available.');
-      return;
-    }
-
-    try {
-      await client.send('DOMDebugger.removeXHRBreakpoint', {url});
-      response.appendResponseLine(`✅ XHR breakpoint removed for: "${url}"`);
-    } catch (error) {
-      response.appendResponseLine(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  },
-});
-
-/**
- * Monitor events on an element or window.
+ * Start or stop monitoring DOM events on an element or window.
  */
 export const monitorEvents = defineTool({
   name: 'obs_monitor_events',
   description:
-    'Monitors DOM events on a specified element or window. Events will be logged to console.',
+    'Monitors DOM events on a specified element or window. action=start begins monitoring; action=stop stops the monitor. Events are logged to console.',
   annotations: {
     title: 'Monitor Events',
     category: ToolCategory.REVERSE_ENGINEERING,
     readOnlyHint: false,
   },
   schema: {
+    action: zod.enum(['start', 'stop']),
     selector: zod
       .string()
       .optional()
-      .default('window')
       .describe(
         'CSS selector for element to monitor, or "window"/"document" (default: window).',
       ),
@@ -2241,7 +2180,52 @@ export const monitorEvents = defineTool({
     ...reverseTaskParamsSchema,
   },
   handler: async (request, response, context) => {
-    const {selector, events, monitorId} = request.params;
+    const {events, monitorId} = request.params;
+    const selector = request.params.selector ?? 'window';
+
+    if (request.params.action === 'stop') {
+      if (!request.params.monitorId) {
+        throw new Error('monitorId is required for action=stop.');
+      }
+
+    const stopCode = `
+(function() {
+  const monitorId = ${JSON.stringify(monitorId)};
+  if (!window.__mcp_monitors__ || !window.__mcp_monitors__[monitorId]) {
+    return { success: false, message: 'Monitor not found: ' + monitorId };
+  }
+
+  const { target, listeners } = window.__mcp_monitors__[monitorId];
+  Object.entries(listeners).forEach(([eventType, handler]) => {
+    target.removeEventListener(eventType, handler, true);
+  });
+
+  delete window.__mcp_monitors__[monitorId];
+  return { success: true };
+})();
+`;
+
+    try {
+      const frame = context.getSelectedFrame();
+      const result = await frame.evaluate(stopCode);
+
+      if (result && typeof result === 'object') {
+        if ((result as {success: boolean}).success) {
+          response.appendResponseLine(`✅ Monitor "${monitorId}" stopped.`);
+        } else {
+          response.appendResponseLine(
+            `❌ ${(result as {message: string}).message}`,
+          );
+        }
+      }
+    } catch (error) {
+      response.appendResponseLine(
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+      return;
+    }
+
     const id = monitorId || selector?.replace(/[^a-zA-Z0-9]/g, '_') || 'window';
 
     const defaultEvents = [
@@ -2335,63 +2319,8 @@ export const monitorEvents = defineTool({
             'Events will be logged to console. Use obs_list_console_messages to view.',
           );
           response.appendResponseLine(
-            `Use obs_stop_monitor(monitorId: "${r.monitorId}") to stop.`,
+            `Use obs_monitor_events(action: "stop", monitorId: "${r.monitorId}") to stop.`,
           );
-        } else {
-          response.appendResponseLine(
-            `❌ ${(result as {message: string}).message}`,
-          );
-        }
-      }
-    } catch (error) {
-      response.appendResponseLine(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  },
-});
-
-/**
- * Stop monitoring events.
- */
-export const stopMonitor = defineTool({
-  name: 'obs_stop_monitor',
-  description: 'Stops an event monitor.',
-  annotations: {
-    title: 'Stop Monitor',
-    category: ToolCategory.REVERSE_ENGINEERING,
-    readOnlyHint: false,
-  },
-  schema: {
-    monitorId: zod.string().describe('The monitor ID to stop.'),
-  },
-  handler: async (request, response, context) => {
-    const {monitorId} = request.params;
-
-    const stopCode = `
-(function() {
-  const monitorId = ${JSON.stringify(monitorId)};
-  if (!window.__mcp_monitors__ || !window.__mcp_monitors__[monitorId]) {
-    return { success: false, message: 'Monitor not found: ' + monitorId };
-  }
-
-  const { target, listeners } = window.__mcp_monitors__[monitorId];
-  Object.entries(listeners).forEach(([eventType, handler]) => {
-    target.removeEventListener(eventType, handler, true);
-  });
-
-  delete window.__mcp_monitors__[monitorId];
-  return { success: true };
-})();
-`;
-
-    try {
-      const frame = context.getSelectedFrame();
-      const result = await frame.evaluate(stopCode);
-
-      if (result && typeof result === 'object') {
-        if ((result as {success: boolean}).success) {
-          response.appendResponseLine(`✅ Monitor "${monitorId}" stopped.`);
         } else {
           response.appendResponseLine(
             `❌ ${(result as {message: string}).message}`,
@@ -2518,7 +2447,7 @@ export const traceFunction = defineTool({
         }
         response.appendResponseLine('');
         response.appendResponseLine(
-          'Tip: Use loc_search_in_sources to find the exact function signature, then use ins_set_breakpoint.',
+          'Tip: Use loc_search_in_sources to find the exact function signature, then use ins_breakpoint(action=set).',
         );
         return;
       }
@@ -2609,7 +2538,7 @@ export const traceFunction = defineTool({
         'Calls will be logged to console. Use obs_list_console_messages to view.',
       );
       response.appendResponseLine(
-        `Use ins_remove_breakpoint(breakpointId: "${breakpointInfo.breakpointId}") to stop tracing.`,
+        `Use ins_breakpoint(action=remove)(breakpointId: "${breakpointInfo.breakpointId}") to stop tracing.`,
       );
 
       // Show context
@@ -2631,6 +2560,124 @@ export const traceFunction = defineTool({
       response.appendResponseLine(
         `Error: ${error instanceof Error ? error.message : String(error)}`,
       );
+    }
+  },
+});
+
+/**
+ * Unified breakpoint management.
+ */
+export const breakpoint = defineTool({
+  name: 'ins_breakpoint',
+  description:
+    'Manages breakpoints. action=set sets a line breakpoint; action=set_text locates code text and sets a breakpoint; action=remove removes one by id; action=list lists active breakpoints.',
+  annotations: {
+    title: 'Breakpoint',
+    category: ToolCategory.REVERSE_ENGINEERING,
+    readOnlyHint: false,
+  },
+  schema: {
+    action: zod.enum(['set', 'set_text', 'remove', 'list']),
+    url: zod.string().optional().describe('For action=set: script URL (partial match or regex).'),
+    lineNumber: zod.number().int().optional().describe('For action=set: 1-based line number.'),
+    columnNumber: zod.number().int().optional().describe('For action=set: 0-based column (default: 0).'),
+    condition: zod.string().optional().describe('Optional condition expression.'),
+    isRegex: zod.boolean().optional().describe('For action=set: treat url as a regex (default: false).'),
+    text: zod.string().optional().describe('For action=set_text: code text to locate.'),
+    urlFilter: zod.string().optional().describe('For action=set_text: only search scripts whose URL contains this.'),
+    occurrence: zod.number().int().optional().describe('For action=set_text: which occurrence (default: 1).'),
+    breakpointId: zod.string().optional().describe('For action=remove: breakpoint id.'),
+  },
+  handler: async (request, response, context) => {
+    const params = request.params;
+
+    if (params.action === 'set') {
+      if (!params.url || params.lineNumber === undefined) {
+        throw new Error('url and lineNumber are required for action=set.');
+      }
+      await setBreakpointTool.handler(
+        {
+          params: {
+            url: params.url,
+            lineNumber: params.lineNumber,
+            columnNumber: params.columnNumber ?? 0,
+            condition: params.condition,
+            isRegex: params.isRegex ?? false,
+          },
+        },
+        response,
+        context,
+      );
+      return;
+    }
+
+    if (params.action === 'set_text') {
+      if (!params.text) {
+        throw new Error('text is required for action=set_text.');
+      }
+      await setBreakpointOnTextTool.handler(
+        {
+          params: {
+            text: params.text,
+            urlFilter: params.urlFilter,
+            occurrence: params.occurrence ?? 1,
+            condition: params.condition,
+          },
+        },
+        response,
+        context,
+      );
+      return;
+    }
+
+    if (params.action === 'remove') {
+      if (!params.breakpointId) {
+        throw new Error('breakpointId is required for action=remove.');
+      }
+      await removeBreakpointTool.handler(
+        {params: {breakpointId: params.breakpointId}},
+        response,
+        context,
+      );
+      return;
+    }
+
+    await listBreakpointsTool.handler({params: {}}, response, context);
+  },
+});
+
+/**
+ * Unified execution control.
+ */
+export const debugControl = defineTool({
+  name: 'ins_debug_control',
+  description:
+    'Controls paused execution: action=pause | resume | step_over | step_into | step_out.',
+  annotations: {
+    title: 'Debug Control',
+    category: ToolCategory.REVERSE_ENGINEERING,
+    readOnlyHint: false,
+  },
+  schema: {
+    action: zod.enum(['pause', 'resume', 'step_over', 'step_into', 'step_out']),
+  },
+  handler: async (request, response, context) => {
+    switch (request.params.action) {
+      case 'pause':
+        await pauseTool.handler({params: {}}, response, context);
+        return;
+      case 'resume':
+        await resumeTool.handler({params: {}}, response, context);
+        return;
+      case 'step_over':
+        await stepOverTool.handler({params: {}}, response, context);
+        return;
+      case 'step_into':
+        await stepIntoTool.handler({params: {}}, response, context);
+        return;
+      case 'step_out':
+        await stepOutTool.handler({params: {}}, response, context);
+        return;
     }
   },
 });

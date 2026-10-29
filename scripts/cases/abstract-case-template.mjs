@@ -92,7 +92,7 @@ Observe Phase:
      one stable caller stack and one candidate signer boundary.
 
 3) Confirm write point:
-   - First use: \`ins_hook_function\` / \`ins_create_hook\`
+   - First use: \`ins_hook\` / \`ins_hook\`
    - Collect:
      where \`<field_name>\` is attached,
      whether payload is assembled before sign or sign after canonicalization,

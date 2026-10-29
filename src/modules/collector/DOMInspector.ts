@@ -11,7 +11,6 @@
  * - 查询DOM元素（querySelector, querySelectorAll）
  * - 获取元素属性和位置
  * - 获取页面DOM结构
- * - 查找可点击元素
  * 
  * 设计原则:
  * - 薄封装CDP DOM域API
@@ -38,19 +37,6 @@ export interface ElementInfo {
     height: number;
   };
   visible?: boolean;
-}
-
-export interface ClickableElement {
-  selector: string;
-  text: string;
-  type: 'button' | 'link' | 'input' | 'other';
-  visible: boolean;
-  boundingBox?: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
 }
 
 export class DOMInspector {
@@ -240,100 +226,6 @@ export class DOMInspector {
     } catch (error) {
       logger.error('getStructure failed:', error);
       return null;
-    }
-  }
-
-  /**
-   * 查找所有可点击元素（按钮、链接等）
-   */
-  async findClickable(filterText?: string): Promise<ClickableElement[]> {
-    try {
-      const page = await this.collector.getActivePage();
-
-      const clickableElements = await page.evaluate((filter) => {
-        const results: any[] = [];
-
-        // 查找按钮
-        const buttons = document.querySelectorAll('button, input[type="button"], input[type="submit"]');
-        buttons.forEach((btn) => {
-          const text = btn.textContent?.trim() || (btn as HTMLInputElement).value || '';
-          if (filter && !text.toLowerCase().includes(filter.toLowerCase())) {
-            return;
-          }
-
-          const rect = btn.getBoundingClientRect();
-          const style = window.getComputedStyle(btn);
-          const visible = style.display !== 'none' && 
-                         style.visibility !== 'hidden' && 
-                         style.opacity !== '0' &&
-                         rect.width > 0 && rect.height > 0;
-
-          // 生成选择器
-          let selector = btn.tagName.toLowerCase();
-          if (btn.id) {
-            selector = `#${btn.id}`;
-          } else if (btn.className) {
-            selector = `${btn.tagName.toLowerCase()}.${btn.className.split(' ')[0]}`;
-          }
-
-          results.push({
-            selector,
-            text,
-            type: 'button',
-            visible,
-            boundingBox: {
-              x: rect.x,
-              y: rect.y,
-              width: rect.width,
-              height: rect.height,
-            },
-          });
-        });
-
-        // 查找链接
-        const links = document.querySelectorAll('a[href]');
-        links.forEach((link) => {
-          const text = link.textContent?.trim() || '';
-          if (filter && !text.toLowerCase().includes(filter.toLowerCase())) {
-            return;
-          }
-
-          const rect = link.getBoundingClientRect();
-          const style = window.getComputedStyle(link);
-          const visible = style.display !== 'none' && 
-                         style.visibility !== 'hidden' && 
-                         style.opacity !== '0' &&
-                         rect.width > 0 && rect.height > 0;
-
-          let selector = 'a';
-          if (link.id) {
-            selector = `#${link.id}`;
-          } else if (link.className) {
-            selector = `a.${link.className.split(' ')[0]}`;
-          }
-
-          results.push({
-            selector,
-            text,
-            type: 'link',
-            visible,
-            boundingBox: {
-              x: rect.x,
-              y: rect.y,
-              width: rect.width,
-              height: rect.height,
-            },
-          });
-        });
-
-        return results;
-      }, filterText);
-
-      logger.info(`findClickable: found ${clickableElements.length} elements${filterText ? ` (filtered by: ${filterText})` : ''}`);
-      return clickableElements;
-    } catch (error) {
-      logger.error('findClickable failed:', error);
-      return [];
     }
   }
 
