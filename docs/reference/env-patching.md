@@ -215,7 +215,7 @@
 4. 记录并确认当前 `first divergence`
 5. 回到页面证据确认真实来源
 6. 只补当前 `first divergence` 对应的最小因果单元
-7. 必要时再用 `diff_env_requirements` 做辅助比对，而不是替代代理日志
+7. 必要时再用 `ver_diff_env_requirements` 做辅助比对，而不是替代代理日志
 8. 立即重跑 `env/entry.js`
 
 ## 禁止事项
@@ -224,7 +224,7 @@
 - 不要一次性全量模拟浏览器
 - 不要没有页面证据就补 cookie / storage / header / UA
 - 不要没有代理日志和 `first divergence` 记录就补宿主
-- 不要把 `diff_env_requirements` 当成第一依据，跳过代理日志直接补
+- 不要把 `ver_diff_env_requirements` 当成第一依据，跳过代理日志直接补
 - 不要把补环境逻辑直接塞进 MCP 核心运行时
 
 ## 产物要求

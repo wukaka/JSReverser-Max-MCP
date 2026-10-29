@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 智能代码收集器 - 解决token溢出问题
  * 
@@ -9,8 +15,9 @@
  */
 
 import type { Page } from 'puppeteer';
-import { logger } from '../../utils/logger.js';
+
 import type { CodeFile } from '../../types/index.js';
+import { logger } from '../../utils/logger.js';
 
 export interface SmartCollectOptions {
   mode: 'summary' | 'priority' | 'incremental' | 'full';

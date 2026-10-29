@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 代码收集模块 - 完整实现
  *
@@ -11,6 +17,7 @@
  */
 
 import type { Browser, Page, CDPSession } from 'puppeteer';
+
 import type {
   CollectCodeOptions,
   CollectCodeResult,
@@ -19,18 +26,19 @@ import type {
   DependencyGraph,
 } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
+import type { BrowserModeManager } from '../browser/BrowserModeManager.js';
+
 import { CodeCache } from './CodeCache.js';
-import { SmartCodeCollector, type SmartCollectOptions } from './SmartCodeCollector.js';
 import { CodeCompressor } from './CodeCompressor.js';
+import { SmartCodeCollector, type SmartCollectOptions } from './SmartCodeCollector.js';
 // import { StreamingCollector } from './StreamingCollector.js'; // 暂不使用
-import { BrowserModeManager } from '../browser/BrowserModeManager.js';
 
 export class CodeCollector {
   private config: PuppeteerConfig;
   private readonly browserManager: BrowserModeManager;
   private browser: Browser | null = null;
   private browserListenerAttached = false;
-  private collectedUrls: Set<string> = new Set(); // 防止重复收集
+  private collectedUrls = new Set<string>(); // 防止重复收集
 
   // 🔧 重新设计：支持大型网站完整收集
   // 策略：收集所有文件到缓存，返回时按需限制
@@ -43,11 +51,11 @@ export class CodeCollector {
   private readonly userAgent: string;
 
   // 🆕 收集的完整数据存储（支持大型网站）
-  private collectedFilesCache: Map<string, CodeFile> = new Map();
+  private collectedFilesCache = new Map<string, CodeFile>();
 
   // ✅ 缓存
   private cache: CodeCache;
-  private cacheEnabled: boolean = true;
+  private cacheEnabled = true;
 
   // 🆕 智能收集、压缩
   private smartCollector: SmartCodeCollector;
@@ -1161,7 +1169,7 @@ export class CodeCollector {
    */
   getFilesByPattern(
     pattern: string,
-    limit: number = 20,
+    limit = 20,
     maxTotalSize: number = this.MAX_RESPONSE_SIZE
   ): {
     files: CodeFile[];
@@ -1232,7 +1240,7 @@ export class CodeCollector {
    * @param maxTotalSize 最大总大小（默认512KB）
    */
   getTopPriorityFiles(
-    topN: number = 10,
+    topN = 10,
     maxTotalSize: number = this.MAX_RESPONSE_SIZE
   ): {
     files: CodeFile[];

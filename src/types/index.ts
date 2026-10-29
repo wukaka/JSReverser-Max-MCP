@@ -52,7 +52,6 @@ export interface PuppeteerConfig {
   userDataDir?: string;
   useStealthScripts?: boolean;
   reuseEnvironmentPerSession?: boolean;
-  autoLaunchExternalBrowser?: boolean;
   externalBrowserPath?: string;
   externalBrowserArgs?: string[];
 }
@@ -1080,7 +1079,7 @@ export interface ReverseTaskHandle {
 export interface ReverseTaskReadApi {
   getTaskDir(taskId: string): string;
   readSnapshot<T>(taskId: string, name: string): Promise<T | undefined>;
-  readLog(name: string, taskId: string): Promise<Record<string, unknown>[]>;
+  readLog(name: string, taskId: string): Promise<Array<Record<string, unknown>>>;
 }
 
 // ==================== 全局类型扩展 ====================

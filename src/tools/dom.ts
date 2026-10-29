@@ -1,10 +1,17 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {zod} from '../third_party/index.js';
-import {defineTool} from './ToolDefinition.js';
+
 import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';
+import {defineTool} from './ToolDefinition.js';
 
 export const queryDom = defineTool({
-  name: 'query_dom',
+  name: 'obs_query_dom',
   description: 'Query one or multiple elements by CSS selector.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {
@@ -24,7 +31,7 @@ export const queryDom = defineTool({
 });
 
 export const getDomStructure = defineTool({
-  name: 'get_dom_structure',
+  name: 'obs_get_dom_structure',
   description: 'Get DOM tree structure for current page.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {
@@ -41,7 +48,7 @@ export const getDomStructure = defineTool({
 });
 
 export const findClickableElements = defineTool({
-  name: 'find_clickable_elements',
+  name: 'loc_find_clickable_elements',
   description: 'Find clickable buttons/links, optionally filtered by text.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {

@@ -42,7 +42,7 @@ interface ResponseLike {
   attachWebSocket(): void;
 }
 
-describe('evaluate_script callback path', () => {
+describe('ins_evaluate_script callback path', () => {
   it('executes page.evaluate callback body and disposes handle', async () => {
     const lines: string[] = [];
     let disposed = 0;
@@ -143,7 +143,7 @@ describe('evaluate_script callback path', () => {
     assert.ok(lines.some((line) => line.includes('Preload script registered')));
   });
 
-  it('runs evaluate_script in the selected frame execution context', async () => {
+  it('runs ins_evaluate_script in the selected frame execution context', async () => {
     const lines: string[] = [];
     let pageUsed = false;
     let frameUsed = false;

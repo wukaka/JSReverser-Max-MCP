@@ -25,7 +25,7 @@ import {
 import {injectStealth} from '../../../src/tools/stealth.js';
 
 describe('jshook tools schema', () => {
-  it('validates collect_code schema', () => {
+  it('validates obs_collect_code schema', () => {
     const schema = zod.object(collectCode.schema);
     const result = schema.parse({
       url: 'https://example.com',
@@ -39,7 +39,7 @@ describe('jshook tools schema', () => {
     assert.strictEqual(result.returnMode, 'pattern');
   });
 
-  it('validates collection_diff schema', () => {
+  it('validates ver_collection_diff schema', () => {
     const schema = zod.object(collectionDiff.schema);
     const result = schema.parse({
       previous: [{url: 'a.js', size: 12, type: 'external'}],
@@ -49,13 +49,13 @@ describe('jshook tools schema', () => {
     assert.strictEqual(result.includeUnchanged, true);
   });
 
-  it('validates summarize_code schema', () => {
+  it('validates loc_summarize_code schema', () => {
     const schema = zod.object(summarizeCode.schema);
     const result = schema.parse({mode: 'single', code: 'const x = 1;'});
     assert.strictEqual(result.mode, 'single');
   });
 
-  it('validates risk_panel and export_session_report schemas', () => {
+  it('validates ver_risk_panel and rec_export_session_report schemas', () => {
     const riskSchema = zod.object(riskPanel.schema);
     const analyzeSchema = zod.object(analyzeTarget.schema);
     const reportSchema = zod.object(exportSessionReport.schema);

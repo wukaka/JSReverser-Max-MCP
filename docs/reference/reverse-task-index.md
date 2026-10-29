@@ -43,38 +43,38 @@
 
 ## 1) 快速摸清页面加载了什么脚本
 
-- `list_scripts`
-- `get_script_source`
-- `search_in_scripts`
+- `obs_list_scripts`
+- `loc_get_script_source`
+- `loc_search_in_scripts`
 
 常用场景：先看主站脚本、动态加载脚本、webpack chunk 的体量和命名。
 
 ## 2) 在压缩/混淆代码里定位关键逻辑
 
-- `find_in_script`
-- `set_breakpoint_on_text`
-- `understand_code`
-- `deobfuscate_code`
+- `loc_find_in_script`
+- `ins_set_breakpoint_on_text`
+- `loc_understand_code`
+- `loc_deobfuscate_code`
 
 常用关键词：`sign`、`token`、`nonce`、`encrypt`、`hmac`。
 
 ## 3) 追踪请求参数是怎么生成的
 
-- `create_hook`
-- `inject_hook`
-- `get_hook_data`
-- `break_on_xhr`
-- `get_request_initiator`
+- `ins_create_hook`
+- `ins_inject_hook`
+- `obs_get_hook_data`
+- `ins_break_on_xhr`
+- `loc_get_request_initiator`
 
 推荐先 Hook `fetch/xhr/websocket`，触发业务动作后再抓记录。
 
 同步记录：
 
-- `record_reverse_evidence`
+- `rec_record_reverse_evidence`
 
 ## 4) 一键分析目标站点（推荐入口）
 
-- `analyze_target`
+- `run_analyze_target`
 
 关键输出：
 
@@ -87,8 +87,8 @@
 
 ## 5) 导出本地补环境工程
 
-- `export_rebuild_bundle`
-- `diff_env_requirements`
+- `rec_export_rebuild_bundle`
+- `ver_diff_env_requirements`
 
 适合在页面里确认请求链路后，导出 `env/entry.js`、`env/env.js`、`env/polyfills.js`、`env/capture.json` 做 local rebuild。
 
@@ -98,64 +98,64 @@
 2. 先读 task-local 代理 env log
 3. 记录当前 `first divergence`
 4. 再按“最小因果单元”决定补丁
-5. 必要时才用 `diff_env_requirements` 做辅助比对
+5. 必要时才用 `ver_diff_env_requirements` 做辅助比对
 
 补环境原则请同时参考：`docs/reference/env-patching.md`
 
 ## 6) 评估风险和加密实现
 
-- `detect_crypto`
-- `risk_panel`
-- `understand_code`
+- `loc_detect_crypto`
+- `ver_risk_panel`
+- `loc_understand_code`
 
 用于识别弱算法、可疑签名实现、安全风险点。
 
 ## 7) 页面交互自动化（配合采样）
 
-- `navigate_page`
-- `query_dom`
-- `click_element`
-- `type_text`
-- `wait_for_element`
-- `take_screenshot`
+- `nav_navigate_page`
+- `obs_query_dom`
+- `nav_click_element`
+- `nav_type_text`
+- `nav_wait_for_element`
+- `obs_take_screenshot`
 
 适合自动触发登录、下单、提交等关键动作后再采集数据。
 
 ## 8) 导出分析结果
 
-- `export_session_report`
-- `collection_diff`
-- `record_reverse_evidence`
+- `rec_export_session_report`
+- `ver_collection_diff`
+- `rec_record_reverse_evidence`
 
 用于沉淀会话证据、对比两次采样差异，并把关键结论写入 task artifact。
 
 ## 9) 登录态复用（需登录站点建议）
 
-- `save_session_state`
-- `restore_session_state`
-- `list_session_states`
-- `dump_session_state`
-- `load_session_state`
-- `check_browser_health`
+- `rec_save_session_state`
+- `rec_restore_session_state`
+- `rec_list_session_states`
+- `rec_dump_session_state`
+- `rec_load_session_state`
+- `sys_check_browser_health`
 
 适合“必须登录后才能访问”的目标站，减少重复扫码/验证码成本。
 
 ## 10) 典型最小链路
 
-1. `new_page`
+1. `nav_new_page`
 2. 先读 `docs/reference/reverse-bootstrap.md`，再按其要求继续读 `docs/reference/case-safety-policy.md` 与 `docs/reference/reverse-workflow.md`
-3. `analyze_target`
+3. `run_analyze_target`
 4. 设定目标边界：`targetKeywords`、`targetUrlPatterns`、`targetFunctionNames`、`targetActionDescription`
-5. `search_in_scripts`
-6. `create_hook` + `inject_hook`
+5. `loc_search_in_scripts`
+6. `ins_create_hook` + `ins_inject_hook`
 7. 触发页面动作
-8. `get_hook_data`
-9. `record_reverse_evidence`
-10. `export_rebuild_bundle`
+8. `obs_get_hook_data`
+9. `rec_record_reverse_evidence`
+10. `rec_export_rebuild_bundle`
 11. 运行 `env/entry.js` 并读取代理 env log
 12. 记录 `first divergence`
-13. `diff_env_requirements`（仅辅助）
-14. `risk_panel`
+13. `ver_diff_env_requirements`（仅辅助）
+14. `ver_risk_panel`
 15. `env-pass` 后再推进纯算法提纯
 
 ## 11) 参数总表

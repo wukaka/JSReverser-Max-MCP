@@ -53,10 +53,10 @@
 
 1. 优先在页面里确认目标请求、脚本、函数、cookie / storage / header 依赖。
 2. 把关键证据写入 task artifact，不要只留在对话里。
-3. 用 `export_rebuild_bundle` 导出或更新本地 `env rebuild` 工程。
+3. 用 `rec_export_rebuild_bundle` 导出或更新本地 `env rebuild` 工程。
 4. 本地执行 `env/entry.js`，优先读取代理 env log，并先记录 `first divergence`。
 5. 按“最小因果单元”补环境：一次只做一个补丁决策，可对应一个值、函数壳、返回对象或最小对象契约。
-6. `diff_env_requirements` 仅作为辅助比对，不要替代代理日志。
+6. `ver_diff_env_requirements` 仅作为辅助比对，不要替代代理日志。
 7. 如果版本升级或行为不一致，按 `first divergence` 原则定位最早分叉点。
 8. 如果任务目标已进入纯算法提纯，必须在 `env-pass` 基础上推进，不要跳过补环境验收直接写“纯算法猜测版”。
 
@@ -93,4 +93,4 @@
 
 ## 最短版调用
 
-请先读取 `docs/reference/reverse-bootstrap.md`，并按其中要求继续读取 `docs/reference/case-safety-policy.md` 与 `docs/reference/reverse-workflow.md`；如果当前任务已进入 `env-pass` 后的纯算法阶段，再读取 `docs/reference/pure-extraction.md`。然后基于当前仓库已有结论继续分析目标链路，先用 MCP 页面观察拿证据，再更新 task artifact 和本地 `env rebuild`。补环境时先读代理 env log，先记录 `first divergence`，再按“最小因果单元”补丁推进；`diff_env_requirements` 仅作辅助，不要替代代理日志。不要猜环境；如果结果不一致，请给出最早分叉点、当前代理日志结论、已确认部分、未确认部分和下一步补法。仓库 case 只保留抽象模板，可执行实现统一放 `artifacts/tasks/<task-id>/`。
+请先读取 `docs/reference/reverse-bootstrap.md`，并按其中要求继续读取 `docs/reference/case-safety-policy.md` 与 `docs/reference/reverse-workflow.md`；如果当前任务已进入 `env-pass` 后的纯算法阶段，再读取 `docs/reference/pure-extraction.md`。然后基于当前仓库已有结论继续分析目标链路，先用 MCP 页面观察拿证据，再更新 task artifact 和本地 `env rebuild`。补环境时先读代理 env log，先记录 `first divergence`，再按“最小因果单元”补丁推进；`ver_diff_env_requirements` 仅作辅助，不要替代代理日志。不要猜环境；如果结果不一致，请给出最早分叉点、当前代理日志结论、已确认部分、未确认部分和下一步补法。仓库 case 只保留抽象模板，可执行实现统一放 `artifacts/tasks/<task-id>/`。

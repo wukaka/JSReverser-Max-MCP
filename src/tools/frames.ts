@@ -21,9 +21,9 @@ function getFrameDepth(frame: Frame): number {
 }
 
 export const listFrames = defineTool({
-  name: 'list_frames',
+  name: 'nav_list_frames',
   description:
-    'Lists all frames (including iframes) in the current page as a tree. Shows frame index, name, and URL. Use select_frame to switch execution context to a specific frame.',
+    'Lists all frames (including iframes) in the current page as a tree. Shows frame index, name, and URL. Use nav_select_frame to switch execution context to a specific frame.',
   annotations: {
     title: 'List Frames',
     category: ToolCategory.DEBUGGING,
@@ -55,9 +55,9 @@ export const listFrames = defineTool({
 });
 
 export const selectFrame = defineTool({
-  name: 'select_frame',
+  name: 'nav_select_frame',
   description:
-    'Selects a frame (by index from list_frames) as the execution context for evaluate_script, hook_function, inspect_object, and other tools that run JavaScript in the page.',
+    'Selects a frame (by index from nav_list_frames) as the execution context for ins_evaluate_script, ins_hook_function, obs_inspect_object, and other tools that run JavaScript in the page.',
   annotations: {
     title: 'Select Frame',
     category: ToolCategory.DEBUGGING,
@@ -68,7 +68,7 @@ export const selectFrame = defineTool({
       .number()
       .int()
       .min(0)
-      .describe('The frame index from list_frames. 0 = main frame.'),
+      .describe('The frame index from nav_list_frames. 0 = main frame.'),
   },
   handler: async (request, response, context) => {
     const page = context.getSelectedPage();
@@ -77,7 +77,7 @@ export const selectFrame = defineTool({
 
     if (frameIdx >= frames.length) {
       response.appendResponseLine(
-        `Invalid frame index ${frameIdx}. Use list_frames to see available frames (0-${frames.length - 1}).`,
+        `Invalid frame index ${frameIdx}. Use nav_list_frames to see available frames (0-${frames.length - 1}).`,
       );
       return;
     }

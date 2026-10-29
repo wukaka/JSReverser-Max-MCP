@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 加密检测模块 - 优化版本
  *
@@ -15,18 +21,20 @@
  * - 性能优化 (单次AST解析、结果缓存)
  */
 
+import type { LLMService } from '../../services/LLMService.js';
 import type { DetectCryptoOptions, DetectCryptoResult, CryptoAlgorithm, CryptoLibrary } from '../../types/index.js';
-import { LLMService } from '../../services/LLMService.js';
 import { logger } from '../../utils/logger.js';
-import { CryptoRulesManager } from './CryptoRules.js';
-import {
+
+import type {
   SecurityIssue,
-  CryptoStrength,
+  CryptoStrength} from './CryptoDetectorEnhanced.js';
+import {
   detectByAST,
   mergeParameters,
   evaluateSecurity,
   analyzeStrength,
 } from './CryptoDetectorEnhanced.js';
+import { CryptoRulesManager } from './CryptoRules.js';
 
 export class CryptoDetector {
   private llm: LLMService;

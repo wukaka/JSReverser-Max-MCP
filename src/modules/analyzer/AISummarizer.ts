@@ -1,10 +1,16 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * AI代码摘要生成器 - 使用LLM生成代码摘要
  */
 
 import type { LLMService } from '../../services/LLMService.js';
-import { logger } from '../../utils/logger.js';
 import type { CodeFile } from '../../types/index.js';
+import { logger } from '../../utils/logger.js';
 
 export interface CodeSummary {
   url: string;
@@ -82,7 +88,7 @@ export class AISummarizer {
   /**
    * 批量生成摘要
    */
-  async summarizeBatch(files: CodeFile[], maxConcurrent: number = 3): Promise<CodeSummary[]> {
+  async summarizeBatch(files: CodeFile[], maxConcurrent = 3): Promise<CodeSummary[]> {
     logger.info(`Generating AI summaries for ${files.length} files...`);
 
     const results: CodeSummary[] = [];

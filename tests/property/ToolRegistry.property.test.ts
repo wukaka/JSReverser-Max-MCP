@@ -1,8 +1,16 @@
-import {describe, it} from 'node:test';
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import assert from 'node:assert';
+import {describe, it} from 'node:test';
+
 import fc from 'fast-check';
-import {ToolRegistry} from '../../src/tools/ToolRegistry.js';
+
 import {ToolCategory} from '../../src/tools/categories.js';
+import {ToolRegistry} from '../../src/tools/ToolRegistry.js';
 
 describe('Property 1: Tool Name Uniqueness', () => {
   it('rejects duplicate names for any generated tool set', () => {

@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Property-Based Tests for AI Service
  * 
@@ -8,13 +14,15 @@
  * initialized and make chat requests successfully.
  */
 
-import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
+
 import * as fc from 'fast-check';
+
 import { AIService, type AIProvider, type AIMessage, type AIResponse } from '../../src/services/AIService.js';
-import { OpenAIProvider } from '../../src/services/OpenAIProvider.js';
 import { AnthropicProvider } from '../../src/services/AnthropicProvider.js';
 import { GeminiProvider } from '../../src/services/GeminiProvider.js';
+import { OpenAIProvider } from '../../src/services/OpenAIProvider.js';
 
 /**
  * Generator for AI provider types

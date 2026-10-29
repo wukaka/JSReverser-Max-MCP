@@ -1,11 +1,19 @@
-import {zod} from '../third_party/index.js';
-import {defineTool} from './ToolDefinition.js';
-import {ToolCategory} from './categories.js';
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {StealthScripts2025} from '../modules/stealth/StealthScripts2025.js';
+import {zod} from '../third_party/index.js';
+
+import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';
+import {defineTool} from './ToolDefinition.js';
+
 
 export const injectStealth = defineTool({
-  name: 'inject_stealth',
+  name: 'ins_inject_stealth',
   description: 'Inject anti-detection stealth scripts to current page.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {
@@ -20,7 +28,7 @@ export const injectStealth = defineTool({
 });
 
 export const listStealthPresets = defineTool({
-  name: 'list_stealth_presets',
+  name: 'ins_list_stealth_presets',
   description: 'List available stealth presets.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {},
@@ -32,7 +40,7 @@ export const listStealthPresets = defineTool({
 });
 
 export const listStealthFeatures = defineTool({
-  name: 'list_stealth_features',
+  name: 'ins_list_stealth_features',
   description: 'List available stealth feature toggles.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {},
@@ -49,7 +57,7 @@ export const listStealthFeatures = defineTool({
 });
 
 export const setUserAgent = defineTool({
-  name: 'set_user_agent',
+  name: 'ins_set_user_agent',
   description: 'Set custom user-agent for active page.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {userAgent: zod.string().min(1)},

@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * CryptoDetector 增强方法
  * 包含统一AST解析、安全评估、强度分析等新功能
@@ -7,9 +13,11 @@ import * as parser from '@babel/parser';
 import traverseImport from '@babel/traverse';
 const traverse = (traverseImport as unknown as {default?: typeof traverseImport}).default ?? traverseImport;
 import * as t from '@babel/types';
+
 import type { CryptoAlgorithm } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
-import { CryptoRulesManager } from './CryptoRules.js';
+
+import type { CryptoRulesManager } from './CryptoRules.js';
 
 export interface SecurityIssue {
   severity: 'critical' | 'high' | 'medium' | 'low';

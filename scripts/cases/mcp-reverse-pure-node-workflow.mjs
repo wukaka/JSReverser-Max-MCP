@@ -17,36 +17,36 @@ Goal:
 
 Required workflow:
 1) Target request discovery:
-   - First use: \`list_network_requests\`
-   - Then use: \`get_network_request\`
+   - First use: \`obs_list_network_requests\`
+   - Then use: \`obs_get_network_request\`
    - Collect:
      target URL / method / status / query shape / body shape / response schema preview.
    - Output:
      one baseline successful request sample and one target path candidate.
 
 2) Initiator confirmation:
-   - First use: \`get_request_initiator\`
-   - Then optionally use: \`list_scripts\`, \`get_script_source\`
+   - First use: \`loc_get_request_initiator\`
+   - Then optionally use: \`obs_list_scripts\`, \`loc_get_script_source\`
    - Collect:
      initiator stack, candidate script URL, bundled module path, caller function names.
    - Output:
      one confirmed initiator chain from network request back to business/runtime code.
 
 3) Write-point capture:
-   - First use: \`hook_function\` or \`create_hook\`
+   - First use: \`ins_hook_function\` or \`ins_create_hook\`
    - Common hooks:
      \`fetch\`, \`XMLHttpRequest.prototype.open\`, \`XMLHttpRequest.prototype.send\`,
      \`URLSearchParams.prototype.append\`, \`URLSearchParams.prototype.set\`
-   - Then use: \`get_hook_data\`
+   - Then use: \`obs_get_hook_data\`
    - Collect:
      target parameter write event, request send timing, stack summary, argument preview.
    - Output:
      exact write point for target field and whether it is appended before send or during send.
 
 4) Source correlation:
-   - First use: \`search_in_sources\`
-   - Then use: \`get_script_source\` or \`collect_code\`
-   - Optional: \`understand_code\`, \`summarize_code\`
+   - First use: \`loc_search_in_sources\`
+   - Then use: \`loc_get_script_source\` or \`obs_collect_code\`
+   - Optional: \`loc_understand_code\`, \`loc_summarize_code\`
    - Collect:
      candidate function bodies, loader chain, security script URLs, dynamic dependency order.
    - Output:
@@ -54,7 +54,7 @@ Required workflow:
      business entry -> runtime wrapper -> security layer -> final signer/write point.
 
 5) Evidence recording:
-   - First use: \`record_reverse_evidence\`
+   - First use: \`rec_record_reverse_evidence\`
    - Record every important milestone:
      request sample, initiator chain, hook hit, script URL, first divergence, patch decision.
    - Output:
@@ -102,20 +102,20 @@ Required workflow:
 
 11) Drift recovery:
     - First use after failure:
-      \`list_network_requests\` -> \`get_request_initiator\` -> hooks -> source correlation.
+      \`obs_list_network_requests\` -> \`loc_get_request_initiator\` -> hooks -> source correlation.
     - Watch:
       script URL drift, file size drift, function name drift, request contract drift.
     - Output:
       one updated first divergence and one next rebuild action.
 
 Tool routing rules:
-- Want target request? Use \`list_network_requests\`
-- Want exact request details? Use \`get_network_request\`
-- Want caller stack? Use \`get_request_initiator\`
-- Want parameter write point? Use \`hook_function\` / \`create_hook\` + \`get_hook_data\`
-- Want source location? Use \`search_in_sources\` / \`get_script_source\`
-- Want code summary? Use \`collect_code\` / \`summarize_code\`
-- Want durable timeline? Use \`record_reverse_evidence\`
+- Want target request? Use \`obs_list_network_requests\`
+- Want exact request details? Use \`obs_get_network_request\`
+- Want caller stack? Use \`loc_get_request_initiator\`
+- Want parameter write point? Use \`ins_hook_function\` / \`ins_create_hook\` + \`obs_get_hook_data\`
+- Want source location? Use \`loc_search_in_sources\` / \`loc_get_script_source\`
+- Want code summary? Use \`obs_collect_code\` / \`loc_summarize_code\`
+- Want durable timeline? Use \`rec_record_reverse_evidence\`
 - Want local reproducibility? Move to \`artifacts/tasks/<task-id>/run/\`
 
 Acceptance criteria:

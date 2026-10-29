@@ -11,8 +11,8 @@ import path from 'node:path';
 import puppeteerExtra from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-import {StealthScripts2025, type StealthPreset, type StealthInjectionOptions} from './modules/stealth/index.js';
 import {logger} from './logger.js';
+import {StealthScripts2025, type StealthPreset, type StealthInjectionOptions} from './modules/stealth/index.js';
 import type {
   Browser,
   ChromeReleaseChannel,

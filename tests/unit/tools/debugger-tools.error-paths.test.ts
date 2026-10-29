@@ -118,7 +118,7 @@ function makeDisabledContext(): ToolContextHarness {
 }
 
 describe('debugger tools error paths', () => {
-  it('hook_function should write records into single __hookStore', async () => {
+  it('ins_hook_function should write records into single __hookStore', async () => {
     const response = makeResponse();
     let capturedScript = '';
     const context: ToolContextHarness = {

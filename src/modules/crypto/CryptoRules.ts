@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 加密检测规则配置
  * 支持动态加载和扩展
@@ -49,11 +55,11 @@ export interface SecurityRule {
  * 加密规则管理器
  */
 export class CryptoRulesManager {
-  private keywordRules: Map<string, CryptoKeywordRule> = new Map();
-  private libraryRules: Map<string, CryptoLibraryRule> = new Map();
-  private constantRules: Map<string, CryptoConstantRule> = new Map();
-  private patternRules: Map<string, CryptoPatternRule> = new Map();
-  private securityRules: Map<string, SecurityRule> = new Map();
+  private keywordRules = new Map<string, CryptoKeywordRule>();
+  private libraryRules = new Map<string, CryptoLibraryRule>();
+  private constantRules = new Map<string, CryptoConstantRule>();
+  private patternRules = new Map<string, CryptoPatternRule>();
+  private securityRules = new Map<string, SecurityRule>();
 
   constructor() {
     this.loadDefaultRules();

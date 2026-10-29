@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * DOM检查器 - 薄封装CDP DOM域
  * 
@@ -14,8 +20,10 @@
  */
 
 import type { CDPSession } from 'puppeteer';
-import type { CodeCollector } from './CodeCollector.js';
+
 import { logger } from '../../utils/logger.js';
+
+import type { CodeCollector } from './CodeCollector.js';
 
 export interface ElementInfo {
   found: boolean;

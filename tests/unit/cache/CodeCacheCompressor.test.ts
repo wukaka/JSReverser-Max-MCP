@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import assert from 'node:assert';
-import {describe, it} from 'node:test';
 import path from 'node:path';
+import {describe, it} from 'node:test';
 
 import {CodeCache} from '../../../src/modules/collector/CodeCache.js';
 import {CodeCompressor} from '../../../src/modules/collector/CodeCompressor.js';

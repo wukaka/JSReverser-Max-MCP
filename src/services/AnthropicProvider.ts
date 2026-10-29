@@ -1,11 +1,19 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Anthropic Provider Implementation
  * 
  * Implements the AIProvider interface for Anthropic's Claude API
  */
 
+import { readFileSync } from 'node:fs';
+
 import Anthropic from '@anthropic-ai/sdk';
-import { readFileSync } from 'fs';
+
 import type { AIProvider, AIMessage, AIResponse, ChatOptions } from './AIService.js';
 
 /**

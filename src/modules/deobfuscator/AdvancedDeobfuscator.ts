@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 高级反混淆模块 - 支持2024-2025最新混淆技术
  * 
@@ -12,7 +18,8 @@
  */
 
 import { logger } from '../../utils/logger.js';
-import { LLMService } from '../../services/LLMService.js';
+import type { LLMService } from '../../services/LLMService.js';
+
 import * as parser from '@babel/parser';
 import traverseImport from '@babel/traverse';
 const traverse = (traverseImport as unknown as {default?: typeof traverseImport}).default ?? traverseImport;

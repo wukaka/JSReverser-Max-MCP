@@ -1,10 +1,17 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {zod} from '../third_party/index.js';
-import {defineTool} from './ToolDefinition.js';
+
 import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';
+import {defineTool} from './ToolDefinition.js';
 
 export const collectCode = defineTool({
-  name: 'collect_code',
+  name: 'obs_collect_code',
   description: 'Collect JavaScript code from a page with smart modes (summary/priority/incremental/full).',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -116,7 +123,7 @@ function diffSummaries(
 }
 
 export const collectionDiff = defineTool({
-  name: 'collection_diff',
+  name: 'ver_collection_diff',
   description: 'Compare previous and current collected file summaries.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -157,7 +164,7 @@ export const collectionDiff = defineTool({
 });
 
 export const searchInScripts = defineTool({
-  name: 'search_in_scripts',
+  name: 'loc_search_in_scripts',
   description: 'Search in collected script cache with regex pattern.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {

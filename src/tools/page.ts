@@ -1,11 +1,20 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+import {createCipheriv, createDecipheriv, createHash, randomBytes} from 'node:crypto';
+import {readFile, writeFile} from 'node:fs/promises';
+
 import {zod} from '../third_party/index.js';
-import {defineTool} from './ToolDefinition.js';
+
 import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';
-import {readFile, writeFile} from 'node:fs/promises';
-import {createCipheriv, createDecipheriv, createHash, randomBytes} from 'node:crypto';
+import {defineTool} from './ToolDefinition.js';
 
-type SessionSnapshot = {
+
+interface SessionSnapshot {
   id: string;
   savedAt: string;
   expiresAt: string;
@@ -14,7 +23,7 @@ type SessionSnapshot = {
   cookies: any[];
   localStorage: Record<string, string>;
   sessionStorage: Record<string, string>;
-};
+}
 
 const sessionSnapshots = new Map<string, SessionSnapshot>();
 const sessionTtlMs = Math.max(60_000, Number(process.env.SESSION_STATE_TTL_MS ?? 30 * 60_000));
@@ -119,7 +128,7 @@ function normalizeSnapshot(snapshot: unknown, fallbackId?: string): SessionSnaps
 }
 
 export const clickElement = defineTool({
-  name: 'click_element',
+  name: 'nav_click_element',
   description: 'Click an element by selector.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
   schema: {selector: zod.string()},
@@ -133,7 +142,7 @@ export const clickElement = defineTool({
 });
 
 export const typeText = defineTool({
-  name: 'type_text',
+  name: 'nav_type_text',
   description: 'Type text into an input element.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
   schema: {
@@ -153,7 +162,7 @@ export const typeText = defineTool({
 });
 
 export const waitForElement = defineTool({
-  name: 'wait_for_element',
+  name: 'nav_wait_for_element',
   description: 'Wait for selector to appear.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {
@@ -172,7 +181,7 @@ export const waitForElement = defineTool({
 });
 
 export const getPerformanceMetrics = defineTool({
-  name: 'get_performance_metrics',
+  name: 'obs_get_performance_metrics',
   description: 'Get page performance metrics from Performance API.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {},
@@ -188,7 +197,7 @@ export const getPerformanceMetrics = defineTool({
 });
 
 export const saveSessionState = defineTool({
-  name: 'save_session_state',
+  name: 'rec_save_session_state',
   description: 'Save current page session state (cookies/localStorage/sessionStorage) into in-memory snapshot.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {
@@ -236,7 +245,7 @@ export const saveSessionState = defineTool({
 });
 
 export const restoreSessionState = defineTool({
-  name: 'restore_session_state',
+  name: 'rec_restore_session_state',
   description: 'Restore a previously saved session snapshot to current page.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
   schema: {
@@ -289,7 +298,7 @@ export const restoreSessionState = defineTool({
 });
 
 export const listSessionStates = defineTool({
-  name: 'list_session_states',
+  name: 'rec_list_session_states',
   description: 'List all saved session snapshots in memory.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {},
@@ -316,7 +325,7 @@ export const listSessionStates = defineTool({
 });
 
 export const deleteSessionState = defineTool({
-  name: 'delete_session_state',
+  name: 'rec_delete_session_state',
   description: 'Delete one in-memory session snapshot by sessionId.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
   schema: {
@@ -337,7 +346,7 @@ export const deleteSessionState = defineTool({
 });
 
 export const dumpSessionState = defineTool({
-  name: 'dump_session_state',
+  name: 'rec_dump_session_state',
   description: 'Export a saved session snapshot as JSON, optionally writing to a file.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {
@@ -377,7 +386,7 @@ export const dumpSessionState = defineTool({
 });
 
 export const loadSessionState = defineTool({
-  name: 'load_session_state',
+  name: 'rec_load_session_state',
   description: 'Load a session snapshot from JSON string or file into memory.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: false},
   schema: {
@@ -434,7 +443,7 @@ export const loadSessionState = defineTool({
 });
 
 export const checkBrowserHealth = defineTool({
-  name: 'check_browser_health',
+  name: 'sys_check_browser_health',
   description: 'Check browser connectivity and active page readiness before running reverse workflows.',
   annotations: {category: ToolCategory.NAVIGATION, readOnlyHint: true},
   schema: {},

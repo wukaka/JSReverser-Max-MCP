@@ -147,7 +147,7 @@ export class ReverseTaskStore implements ReverseTaskReadApi {
     return JSON.parse(raw) as T;
   }
 
-  async readLog(name: string, taskId: string): Promise<Record<string, unknown>[]> {
+  async readLog(name: string, taskId: string): Promise<Array<Record<string, unknown>>> {
     const filePath = path.join(this.getTaskDir(taskId), `${name}.jsonl`);
     if (!(await pathExists(filePath))) {
       return [];

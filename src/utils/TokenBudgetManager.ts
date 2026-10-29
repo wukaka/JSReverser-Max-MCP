@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * TokenBudgetManager - 全局 Token 预算管理器
  * 
@@ -15,8 +21,8 @@
  * - 自动清理 - 90% 时自动触发
  */
 
-import { logger } from './logger.js';
 import { DetailedDataManager } from './detailedDataManager.js';
+import { logger } from './logger.js';
 import { safeStringify } from './safeJson.js';
 
 /**
@@ -311,9 +317,9 @@ export class TokenBudgetManager {
     // 基于工具使用的建议
     for (const { tool, percentage } of topTools) {
       if (percentage > 30) {
-        if (tool.includes('collect_code')) {
+        if (tool.includes('obs_collect_code')) {
           suggestions.push(`💡 ${tool} uses ${percentage}% tokens. Try smartMode="summary" or "priority"`);
-        } else if (tool.includes('get_script_source')) {
+        } else if (tool.includes('loc_get_script_source')) {
           suggestions.push(`💡 ${tool} uses ${percentage}% tokens. Try preview=true first`);
         } else if (tool.includes('network_get_requests')) {
           suggestions.push(`💡 ${tool} uses ${percentage}% tokens. Reduce limit or use filters`);

@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * RuntimeInspector - 运行时检查
  * 
@@ -14,9 +20,11 @@
  */
 
 import type { CDPSession } from 'puppeteer';
-import type { CodeCollector } from '../collector/CodeCollector.js';
-import type { DebuggerManager, CallFrame, Scope } from './DebuggerManager.js';
+
 import { logger } from '../../utils/logger.js';
+import type { CodeCollector } from '../collector/CodeCollector.js';
+
+import type { DebuggerManager, CallFrame, Scope } from './DebuggerManager.js';
 
 /**
  * 变量信息
@@ -117,7 +125,7 @@ export class RuntimeInspector {
    *
    * @param maxDepth 最大异步堆栈深度（默认 32）
    */
-  async enableAsyncStackTraces(maxDepth: number = 32): Promise<void> {
+  async enableAsyncStackTraces(maxDepth = 32): Promise<void> {
     if (!this.debuggerManager.isEnabled()) {
       throw new Error('Debugger is not enabled. Call debuggerManager.enable() first.');
     }

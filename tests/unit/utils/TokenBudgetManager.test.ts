@@ -42,7 +42,7 @@ describe('TokenBudgetManager', () => {
 
   it('records tool calls and reports stats', () => {
     const manager = TokenBudgetManager.getInstance();
-    manager.recordToolCall('collect_code', { a: 1 }, { data: 'x'.repeat(100) });
+    manager.recordToolCall('obs_collect_code', { a: 1 }, { data: 'x'.repeat(100) });
     manager.recordToolCall('page_evaluate', { b: 2 }, { data: 'y'.repeat(80) });
 
     const stats = manager.getStats();
@@ -65,7 +65,7 @@ describe('TokenBudgetManager', () => {
     manager.currentUsage = 190000;
     manager.toolCallHistory = [
       {
-        toolName: 'collect_code',
+        toolName: 'obs_collect_code',
         timestamp: Date.now() - 10 * 60 * 1000,
         requestSize: 100,
         responseSize: 100,
@@ -73,7 +73,7 @@ describe('TokenBudgetManager', () => {
         cumulativeTokens: 50000,
       },
       {
-        toolName: 'collect_code',
+        toolName: 'obs_collect_code',
         timestamp: Date.now(),
         requestSize: 100,
         responseSize: 100,
@@ -96,7 +96,7 @@ describe('TokenBudgetManager', () => {
 
     manager.currentUsage = 195000;
     const critical = manager.generateSuggestions([
-      { tool: 'collect_code', tokens: 150000, percentage: 77 },
+      { tool: 'obs_collect_code', tokens: 150000, percentage: 77 },
     ]);
     assert.ok(critical.some((s: string) => s.includes('CRITICAL')));
     assert.ok(critical.some((s: string) => s.includes('smartMode')));

@@ -114,9 +114,9 @@ function toHookRecordArray(data: unknown): Array<Record<string, unknown>> {
 }
 
 async function syncHookRecordsFromPage(runtime: ReturnType<typeof getJSHookRuntime>, hookId?: string): Promise<void> {
-  type EvaluatingPage = {
+  interface EvaluatingPage {
     evaluate: (fn: (id?: string) => unknown, id?: string) => Promise<unknown>;
-  };
+  }
 
   let page: EvaluatingPage | null = null;
   try {
@@ -167,7 +167,7 @@ async function syncHookRecordsFromPage(runtime: ReturnType<typeof getJSHookRunti
 }
 
 export const createHook = defineTool({
-  name: 'create_hook',
+  name: 'ins_create_hook',
   description: 'RECOMMENDED: Create hook script for function/fetch/xhr/property/cookie/websocket/eval/timer. Hooks run without pausing page execution and are the preferred approach over breakpoints for monitoring and interception.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {
@@ -186,7 +186,7 @@ export const createHook = defineTool({
 });
 
 export const injectHook = defineTool({
-  name: 'inject_hook',
+  name: 'ins_inject_hook',
   description: 'Inject an existing hook into the current page.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {hookId: zod.string()},
@@ -202,7 +202,7 @@ export const injectHook = defineTool({
 });
 
 export const getHookData = defineTool({
-  name: 'get_hook_data',
+  name: 'obs_get_hook_data',
   description: 'Get captured data for one hook or all hooks. Supports raw view and summary view for noise reduction.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -250,7 +250,7 @@ export const getHookData = defineTool({
 });
 
 export const removeHook = defineTool({
-  name: 'remove_hook',
+  name: 'ins_remove_hook',
   description: 'Remove a hook by id.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {hookId: zod.string()},

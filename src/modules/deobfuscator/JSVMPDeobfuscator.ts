@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * JSVMP反混淆器
  * 识别和破解JavaScript虚拟机保护（JSVMP）混淆
@@ -9,6 +15,8 @@ const traverse = (traverseImport as unknown as {default?: typeof traverseImport}
 import generateImport from '@babel/generator';
 const generate = (generateImport as unknown as {default?: typeof generateImport}).default ?? generateImport;
 import * as t from '@babel/types';
+
+import type { LLMService } from '../../services/LLMService.js';
 import type {
   JSVMPDeobfuscatorOptions,
   JSVMPDeobfuscatorResult,
@@ -19,7 +27,6 @@ import type {
   UnresolvedPart,
 } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
-import type { LLMService } from '../../services/LLMService.js';
 
 /**
  * JSVMP反混淆器

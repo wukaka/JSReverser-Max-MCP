@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Packer反混淆器
  * 专门用于处理Dean Edwards' Packer混淆的JavaScript代码
@@ -136,7 +142,7 @@ export class PackerDeobfuscator {
   } | null {
     try {
       // 使用Function构造器安全地解析参数
-      // eslint-disable-next-line no-new-func
+       
       const parseFunc = new Function(`return [${argsString}];`);
       const params = parseFunc();
 
@@ -241,7 +247,7 @@ export class AAEncodeDeobfuscator {
     try {
       // AAEncode本质上是可执行的JavaScript
       // 使用Function构造器执行并获取结果
-      // eslint-disable-next-line no-new-func
+       
       const decoded = new Function(`return (${code})`)();
 
       logger.info('✅ AAEncode反混淆完成');

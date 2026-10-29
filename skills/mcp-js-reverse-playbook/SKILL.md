@@ -56,7 +56,7 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 规则：
 
 - 优先 fetch/xhr hook
-- 如果目标发生在首屏初始化、首个请求前参数装配、页面首次执行阶段，先用 `inject_preload_script` 挂早期采样或补环境脚本
+- 如果目标发生在首屏初始化、首个请求前参数装配、页面首次执行阶段，先用 `ins_inject_preload_script` 挂早期采样或补环境脚本
 - 命中后先看 summary，再按需看 raw
 - Hook 不足时再考虑断点
 
@@ -114,7 +114,7 @@ description: 在使用 MCP 做前端 JavaScript 逆向时使用，适用于签�
 - 先读代理 env log，再记录当前 `first divergence`
 - 一次只做一个补丁决策，不是机械地一次只改一个属性
 - 一个补丁决策对应一个最小因果单元：值 / 函数壳 / 返回对象 / 最小对象契约
-- `diff_env_requirements` 仅作辅助，不替代代理日志
+- `ver_diff_env_requirements` 仅作辅助，不替代代理日志
 - 每次补丁后立即复测，并记录 `first divergence` 是否前移
 - 每次补丁都写入 task artifact
 

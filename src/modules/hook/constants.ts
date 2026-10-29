@@ -1,4 +1,10 @@
 
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 export const NATIVE_PROTECT_STRING = `
 if (!window.NativeProtect) {
     class NativeProtect {
@@ -70,5 +76,5 @@ export function getDescStr(target: string, name: string, desc: { value?: number 
         writable: ${desc.writable},
         enumerable: ${desc.enumerable},
         configurable: ${desc.configurable},
-    });`
+    });`;
 }

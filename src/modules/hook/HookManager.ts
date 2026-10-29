@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * HookManager — 统一的 Hook 管理器
  *
@@ -99,8 +105,8 @@ export interface HookManagerStats {
 
 export class HookManager {
   private registry: HookTypeRegistry;
-  private hooks: Map<string, HookMeta> = new Map();
-  private hookData: Map<string, HookDataRecord[]> = new Map();
+  private hooks = new Map<string, HookMeta>();
+  private hookData = new Map<string, HookDataRecord[]>();
   private maxRecordsPerHook: number;
 
   constructor(maxRecordsPerHook = 1000) {

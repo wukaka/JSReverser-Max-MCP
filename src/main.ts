@@ -25,12 +25,13 @@ import * as jshookCollectorTools from './tools/collector.js';
 import * as consoleTools from './tools/console.js';
 import * as debuggerTools from './tools/debugger.js';
 import * as jshookDomTools from './tools/dom.js';
-import * as jshookHookTools from './tools/hook.js';
 import * as frameTools from './tools/frames.js';
+import * as jshookHookTools from './tools/hook.js';
 import * as networkTools from './tools/network.js';
 import * as jshookPageTools from './tools/page.js';
 import * as pagesTools from './tools/pages.js';
 import * as jshookRebuildTools from './tools/rebuild.js';
+import {getJSHookRuntime} from './tools/runtime.js';
 import * as screenshotTools from './tools/screenshot.js';
 import * as scriptTools from './tools/script.js';
 import * as jshookStealthTools from './tools/stealth.js';
@@ -41,7 +42,6 @@ import * as websocketTools from './tools/websocket.js';
 import {ErrorCodes, formatError} from './utils/errors.js';
 import {TokenBudgetManager} from './utils/TokenBudgetManager.js';
 import {ToolExecutionScheduler} from './utils/ToolExecutionScheduler.js';
-import {getJSHookRuntime} from './tools/runtime.js';
 
 // If moved update release-please config
 // x-release-please-start-version

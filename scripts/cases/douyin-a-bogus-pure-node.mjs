@@ -73,16 +73,16 @@ Branch Markers:
 
 Observe Phase:
 1) Find the target request:
-   - First use: \`list_network_requests\`
-   - Then use: \`get_network_request\`
+   - First use: \`obs_list_network_requests\`
+   - Then use: \`obs_get_network_request\`
    - Collect:
      one successful request carrying \`a_bogus\` and companion fields.
    - Output:
      one baseline browser sample with \`status_code=0\`.
 
 2) Confirm initiator chain:
-   - First use: \`get_request_initiator\`
-   - Then use: \`list_scripts\`, \`get_script_source\`
+   - First use: \`loc_get_request_initiator\`
+   - Then use: \`obs_list_scripts\`, \`loc_get_script_source\`
    - Collect:
      business entry, runtime wrapper, security script URLs.
    - Expected chain example:
@@ -91,7 +91,7 @@ Observe Phase:
      one stable caller stack for the resource-list request.
 
 3) Capture the write point of \`a_bogus\`:
-   - First use: \`hook_function\` / \`create_hook\`
+   - First use: \`ins_hook_function\` / \`ins_create_hook\`
    - Collect:
      stack frame when \`a_bogus\` is written,
      whether it is appended before send or during send.
@@ -100,8 +100,8 @@ Observe Phase:
 
 Capture Phase:
 4) Confirm source correlation:
-   - First use: \`search_in_sources\`
-   - Then use: \`get_script_source\`, \`collect_code\`
+   - First use: \`loc_search_in_sources\`
+   - Then use: \`loc_get_script_source\`, \`obs_collect_code\`
    - Collect:
      exact source file or bundle segment containing the write chain.
    - Expected result:
@@ -111,7 +111,7 @@ Capture Phase:
      business request -> security loader -> bdms send-time patch.
 
 5) Record evidence:
-   - First use: \`record_reverse_evidence\`
+   - First use: \`rec_record_reverse_evidence\`
    - Record:
      target request sample, initiator, write point, script URLs, first divergence notes.
    - Output:

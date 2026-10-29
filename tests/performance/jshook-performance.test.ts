@@ -1,5 +1,12 @@
-import {describe, it} from 'node:test';
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import assert from 'node:assert';
+import {describe, it} from 'node:test';
+
 import {CodeCompressor} from '../../src/modules/collector/CodeCompressor.js';
 import {ToolExecutionScheduler} from '../../src/utils/ToolExecutionScheduler.js';
 

@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * HookTypeRegistry — 插件化 Hook 类型注册系统
  *
@@ -8,9 +14,10 @@
  * - HookManager 通过 registry 查找类型，无需 switch-case 硬编码
  */
 
-import { HookCodeBuilder, type BuilderConfig } from './HookCodeBuilder.js';
-// xbs
 import { getStringArray, NATIVE_PROTECT_STRING, getToStringProtectCode, LOGGER_INFO_STRING, printString, getDescStr } from './constants.js';
+import type { HookCodeBuilder} from './HookCodeBuilder.js';
+import { type BuilderConfig } from './HookCodeBuilder.js';
+// xbs
 // xbs end
 
 // ==================== 插件接口 ====================
@@ -37,7 +44,7 @@ export interface HookTypePlugin {
 // ==================== 注册表 ====================
 
 export class HookTypeRegistry {
-  private plugins: Map<string, HookTypePlugin> = new Map();
+  private plugins = new Map<string, HookTypePlugin>();
 
   constructor() {
     this.registerBuiltins();
@@ -1016,7 +1023,7 @@ function createEvalPlugin(): HookTypePlugin {
       if (config.store.console) {
         // xbs
         // lines.push(`    console.log('[${hookId}] eval', hookData);`);
-        lines.push(printString(`'[${hookId}] eval', hookData`))
+        lines.push(printString(`'[${hookId}] eval', hookData`));
         // xbs end
       }
 
@@ -1066,7 +1073,7 @@ function createEvalPlugin(): HookTypePlugin {
       lines.push(getDescStr(`window.Function`, "name", { value: "Function", writable: false, enumerable: false, configurable: true }));
       lines.push(getDescStr(`window.Function`, "length", { value: 1, writable: false, enumerable: false, configurable: true }));
       // lines.push(`  console.log('[${hookId}] ✅ Hooked: eval & Function');`);
-      lines.push(printString(`'[${hookId}] ✅ Hooked: eval & Function'`))
+      lines.push(printString(`'[${hookId}] ✅ Hooked: eval & Function'`));
       // xbs end
       lines.push(`})();`);
 

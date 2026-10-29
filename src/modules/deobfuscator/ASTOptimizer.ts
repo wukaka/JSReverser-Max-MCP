@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * AST优化器 - 基于Babel的高级反混淆转换
  * 
@@ -18,6 +24,7 @@ const traverse = (traverseImport as unknown as {default?: typeof traverseImport}
 import generateImport from '@babel/generator';
 const generate = (generateImport as unknown as {default?: typeof generateImport}).default ?? generateImport;
 import * as t from '@babel/types';
+
 import { logger } from '../../utils/logger.js';
 
 export class ASTOptimizer {

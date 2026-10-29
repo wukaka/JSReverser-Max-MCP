@@ -31,7 +31,7 @@ describe('Backward compatibility', () => {
     ] as NamedToolExport[];
 
     assert.ok(tools.length > 0);
-    assert.ok(tools.some((tool) => tool.name === 'evaluate_script'));
+    assert.ok(tools.some((tool) => tool.name === 'ins_evaluate_script'));
   });
 
   it('keeps CLI argument compatibility', () => {

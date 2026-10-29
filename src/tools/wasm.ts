@@ -1,14 +1,11 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {readFile} from 'node:fs/promises';
 
-import type {
-  DetectWasmResult,
-  WasmBoundaryChainResult,
-  WasmDecompileResultSummary,
-  WasmModuleSummary,
-  WasmRuntimeCaptureResult,
-  WasmSignatureDiffResultSummary,
-} from '../types/index.js';
-import {zod} from '../third_party/index.js';
 import type {
   WasmBoundaryChain,
   WasmDecompileResult,
@@ -17,10 +14,19 @@ import type {
   WasmRuntimeEvent,
   WasmSignatureDiffResult,
 } from '../modules/wasm/WasmTypes.js';
+import {zod} from '../third_party/index.js';
+import type {
+  DetectWasmResult,
+  WasmBoundaryChainResult,
+  WasmDecompileResultSummary,
+  WasmModuleSummary,
+  WasmRuntimeCaptureResult,
+  WasmSignatureDiffResultSummary,
+} from '../types/index.js';
 
 import {ToolCategory} from './categories.js';
-import {defineTool} from './ToolDefinition.js';
 import {getJSHookRuntime} from './runtime.js';
+import {defineTool} from './ToolDefinition.js';
 
 function appendJson(response: {appendResponseLine(value: string): void}, value: unknown): void {
   response.appendResponseLine('```json');
@@ -179,7 +185,7 @@ async function openReverseTaskIfReady(params: {
 }
 
 export const collectWasm = defineTool({
-  name: 'collect_wasm',
+  name: 'wasm_collect',
   description: 'Collect Wasm modules from network responses and runtime instantiation hooks.',
   annotations: {
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -209,7 +215,7 @@ export const collectWasm = defineTool({
 });
 
 export const listWasmModules = defineTool({
-  name: 'list_wasm_modules',
+  name: 'wasm_list_modules',
   description: 'List Wasm modules captured in the current session.',
   annotations: {
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -232,7 +238,7 @@ export const listWasmModules = defineTool({
 });
 
 export const analyzeWasmModule = defineTool({
-  name: 'analyze_wasm_module',
+  name: 'wasm_analyze_module',
   description: 'Analyze one Wasm module by session module ID, base64 payload, or artifact path.',
   annotations: {
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -310,7 +316,7 @@ export const analyzeWasmModule = defineTool({
 });
 
 export const inspectWasmExports = defineTool({
-  name: 'inspect_wasm_exports',
+  name: 'wasm_inspect_exports',
   description: 'Summarize Wasm export usage and likely high-value entry points.',
   annotations: {
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -343,7 +349,7 @@ export const inspectWasmExports = defineTool({
 });
 
 export const summarizeWasmBoundary = defineTool({
-  name: 'summarize_wasm_boundary',
+  name: 'wasm_summarize_boundary',
   description: 'Build candidate JS -> memory bridge -> Wasm export -> sink chains for a captured Wasm module.',
   annotations: {
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -375,7 +381,7 @@ export const summarizeWasmBoundary = defineTool({
 });
 
 export const analyzeWasmSignatureDiff = defineTool({
-  name: 'analyze_wasm_signature_diff',
+  name: 'wasm_signature_diff',
   description: 'Compare captured JS-Wasm boundary chains to highlight which query/body/header inputs vary like signature material.',
   annotations: {
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -411,7 +417,7 @@ export const analyzeWasmSignatureDiff = defineTool({
 });
 
 export const decompileWasmModule = defineTool({
-  name: 'decompile_wasm_module',
+  name: 'wasm_decompile',
   description: 'Disassemble a Wasm module to WAT using wabt/wasm2wat and summarize function-level behavior.',
   annotations: {
     category: ToolCategory.REVERSE_ENGINEERING,

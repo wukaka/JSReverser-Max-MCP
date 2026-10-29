@@ -1,13 +1,22 @@
-import {describe, it} from 'node:test';
-import fc from 'fast-check';
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import assert from 'node:assert';
+import {describe, it} from 'node:test';
+
+import fc from 'fast-check';
+
+
 import {zod} from '../../src/third_party/index.js';
-import {collectCode} from '../../src/tools/collector.js';
 import {summarizeCode} from '../../src/tools/analyzer.js';
-import {createHook} from '../../src/tools/hook.js';
-import {injectStealth} from '../../src/tools/stealth.js';
+import {collectCode} from '../../src/tools/collector.js';
 import {queryDom} from '../../src/tools/dom.js';
+import {createHook} from '../../src/tools/hook.js';
 import {clickElement} from '../../src/tools/page.js';
+import {injectStealth} from '../../src/tools/stealth.js';
 
 const collectSchema = zod.object(collectCode.schema);
 const summarizeSchema = zod.object(summarizeCode.schema);

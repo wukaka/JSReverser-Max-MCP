@@ -57,34 +57,34 @@ GEMINI_CLI_PATH=gemini-cli
 
 强依赖外部 AI 的功能：
 
-- `understand_code`
+- `loc_understand_code`
   - 内部会调用 LLM 做代码语义理解、业务逻辑提取、安全风险补充
 
 可选启用外部 AI 的功能：
 
-- `detect_crypto`
+- `loc_detect_crypto`
   - 只有传 `useAI=true` 时才会额外调用 LLM；不传时主要依赖本地规则和 AST 分析
-- `analyze_target`
+- `run_analyze_target`
   - 传 `useAI=true` 时会在一站式分析里启用更深的 AI 辅助分析
-- `risk_panel`
+- `ver_risk_panel`
   - 参数里有 `useAI`，但当前实现主体仍以本地分析结果聚合为主
 
 有 AI 时效果更好，但不配也能运行的功能：
 
-- `deobfuscate_code`
+- `loc_deobfuscate_code`
   - 本地规则、AST 优化、专项反混淆管线始终可用；配置外部 AI 后，复杂语义清理、VM 结构理解、部分编码型混淆降级分析会更完整
 
 完全不依赖外部 AI 的功能：
 
 - 浏览器接管
 - Hook / 断点 / Console / Storage / Network / WebSocket
-- `collect_code`
-- `export_rebuild_bundle`
-- `diff_env_requirements`
-- `record_reverse_evidence`
+- `obs_collect_code`
+- `rec_export_rebuild_bundle`
+- `ver_diff_env_requirements`
+- `rec_record_reverse_evidence`
 
 如果没配外部 AI，典型影响是：
 
-- `understand_code` 会直接报 provider 未配置
-- `detect_crypto(useAI=true)` 会退回本地分析或忽略 AI 增强
-- `deobfuscate_code` 仍可跑，但某些高难度混淆的解释和清理质量会下降
+- `loc_understand_code` 会直接报 provider 未配置
+- `loc_detect_crypto(useAI=true)` 会退回本地分析或忽略 AI 增强
+- `loc_deobfuscate_code` 仍可跑，但某些高难度混淆的解释和清理质量会下降

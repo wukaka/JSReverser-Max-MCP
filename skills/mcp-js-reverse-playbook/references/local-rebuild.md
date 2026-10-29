@@ -18,7 +18,7 @@
 4. 优先读取代理 env log
 5. 记录当前 `first divergence`
 6. 按“最小因果单元”做一个补丁决策
-7. 必要时再用 `diff_env_requirements` 做辅助比对
+7. 必要时再用 `ver_diff_env_requirements` 做辅助比对
 8. 复跑并确认 `first divergence` 是否前移
 9. 补丁写回 task artifact
 

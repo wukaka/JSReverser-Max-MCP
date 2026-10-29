@@ -90,7 +90,7 @@ describe('reverse task tools', () => {
             source: 'mcp',
             scriptId: '77',
             url: 'https://cdn.example.com/security.js',
-            locator: {type: 'find_in_script', query: 'sign', offset: '10'},
+            locator: {type: 'loc_find_in_script', query: 'sign', offset: '10'},
             note: 'candidate sign chain',
           },
         },

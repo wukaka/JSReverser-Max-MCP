@@ -1,11 +1,19 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * OpenAI Provider Implementation
  * 
  * Implements the AIProvider interface for OpenAI's API
  */
 
+import { readFileSync } from 'node:fs';
+
 import OpenAI from 'openai';
-import { readFileSync } from 'fs';
+
 import type { AIProvider, AIMessage, AIResponse, ChatOptions } from './AIService.js';
 
 /**

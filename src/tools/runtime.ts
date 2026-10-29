@@ -19,6 +19,7 @@ import {WasmDecompiler} from '../modules/wasm/WasmDecompiler.js';
 import {WasmRuntimeInspector} from '../modules/wasm/WasmRuntimeInspector.js';
 import {ReverseTaskStore} from '../reverse/ReverseTaskStore.js';
 import {LLMService} from '../services/LLMService.js';
+import type {Page} from '../third_party/index.js';
 import type {PuppeteerConfig} from '../types/index.js';
 import {
   CodeCacheAdapter,
@@ -28,7 +29,6 @@ import {
 import {getBrowserConfig} from '../utils/config.js';
 import {DetailedDataManager} from '../utils/detailedDataManager.js';
 import {UnifiedCacheManager} from '../utils/UnifiedCacheManager.js';
-import type {Page} from '../third_party/index.js';
 
 let runtime: JSHookRuntime | undefined;
 
@@ -74,7 +74,6 @@ export function getJSHookRuntime(): JSHookRuntime {
       ? Number(process.env.REMOTE_DEBUGGING_PORT)
       : 9222,
     useStealthScripts: process.env.USE_STEALTH_SCRIPTS !== 'false',
-    autoLaunch: true,
   });
 
   const collector = new CodeCollector(toCollectorConfig(), browserManager);

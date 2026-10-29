@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Runtime path helpers that stay stable even when the host launches the
  * server with an unexpected working directory (for example Windows system32).

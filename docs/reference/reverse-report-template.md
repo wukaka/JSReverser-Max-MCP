@@ -43,7 +43,7 @@
 - 尚未补齐的对象
 - 本地执行报错
 - 当前补丁决策对应的最小因果单元
-- 最近一次 `diff_env_requirements` 结果（仅辅助）
+- 最近一次 `ver_diff_env_requirements` 结果（仅辅助）
 
 ## 5. `first divergence` / 差异分析
 

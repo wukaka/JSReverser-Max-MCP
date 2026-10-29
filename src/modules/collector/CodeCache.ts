@@ -1,12 +1,19 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 代码缓存管理器 - 缓存已收集的代码，避免重复收集
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import crypto from 'crypto';
-import { logger } from '../../utils/logger.js';
+import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import type { CodeFile, CollectCodeResult } from '../../types/index.js';
+import { logger } from '../../utils/logger.js';
 import { resolveDefaultCodeCacheDir } from '../../utils/projectPaths.js';
 
 export interface CacheEntry {
@@ -28,7 +35,7 @@ export class CodeCache {
   private cacheDir: string;
   private maxAge: number;
   private maxSize: number;
-  private memoryCache: Map<string, CacheEntry> = new Map();
+  private memoryCache = new Map<string, CacheEntry>();
 
   // 🆕 内存缓存大小限制（防止内存泄漏）
   private readonly MAX_MEMORY_CACHE_SIZE = 100; // 最多 100 个条目

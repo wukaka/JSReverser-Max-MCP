@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Property-based tests for BrowserManager
  * Tests universal properties that should hold across all valid executions
@@ -5,9 +11,11 @@
  * Uses fast-check for property-based testing with minimum 100 iterations
  */
 
-import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
+import { describe, it, beforeEach, afterEach } from 'node:test';
+
 import * as fc from 'fast-check';
+
 import { BrowserManager } from '../../src/browser.js';
 
 const runBrowserTests = process.env.RUN_BROWSER_TESTS === 'true';
@@ -195,7 +203,7 @@ describe('BrowserManager Property Tests', {skip: !runBrowserTests}, () => {
             await manager.ensureBrowser();
 
             // Simulate concurrent tool calls
-            const browserPromises: Promise<any>[] = [];
+            const browserPromises: Array<Promise<any>> = [];
             for (let i = 0; i < numConcurrentCalls; i++) {
               browserPromises.push(manager.getBrowser());
             }

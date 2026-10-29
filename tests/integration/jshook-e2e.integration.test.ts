@@ -1,5 +1,12 @@
-import {describe, it} from 'node:test';
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import assert from 'node:assert';
+import {describe, it} from 'node:test';
+
 import {SmartCodeCollector} from '../../src/modules/collector/SmartCodeCollector.js';
 import {HookManager} from '../../src/modules/hook/HookManager.js';
 import {GeminiProvider} from '../../src/services/GeminiProvider.js';

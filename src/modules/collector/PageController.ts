@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 页面控制器 - 薄封装Puppeteer API
  * 
@@ -8,10 +14,12 @@
  * - 所有方法都是薄封装，不超过5行代码
  */
 
-import type { CodeCollector } from './CodeCollector.js';
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { logger } from '../../utils/logger.js';
-import fs from 'fs';
-import path from 'path';
+
+import type { CodeCollector } from './CodeCollector.js';
 
 export interface NavigationOptions {
   waitUntil?: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2';
@@ -346,7 +354,7 @@ export class PageController {
       // Run script directly in the new document context.
       // This avoids relying on DOM readiness (head/body may not exist yet)
       // and is more reliable than appending an inline <script> element.
-      // eslint-disable-next-line no-new-func
+       
       new Function(script)();
     }, scriptContent);
 

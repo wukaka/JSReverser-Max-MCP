@@ -1,8 +1,15 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 日志工具
  */
 
 import chalk from 'chalk';
+
 import { safeStringify } from './safeJson.js';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';

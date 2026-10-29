@@ -29,7 +29,7 @@
 4. Verify
 - 生成签名后立即发一次验签请求（闭环），以服务端响应为最终判据。
 5. Harden
-- 记录 first divergence（首个差异点），按“最小因果单元补丁”迭代；`diff_env_requirements` 仅作辅助。
+- 记录 first divergence（首个差异点），按“最小因果单元补丁”迭代；`ver_diff_env_requirements` 仅作辅助。
 
 ## 输出契约
 - `signature_parts_count`

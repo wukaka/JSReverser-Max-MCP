@@ -7,14 +7,14 @@
 import {zod} from '../third_party/index.js';
 
 import {ToolCategory} from './categories.js';
-import {defineTool, timeoutSchema} from './ToolDefinition.js';
 import {getJSHookRuntime} from './runtime.js';
+import {defineTool, timeoutSchema} from './ToolDefinition.js';
 
 // Default navigation timeout in milliseconds (10 seconds)
 const DEFAULT_NAV_TIMEOUT = 10000;
 
 export const listPages = defineTool({
-  name: 'list_pages',
+  name: 'nav_list_pages',
   description: `Get a list of pages open in the browser.`,
   annotations: {
     category: ToolCategory.NAVIGATION,
@@ -27,7 +27,7 @@ export const listPages = defineTool({
 });
 
 export const selectPage = defineTool({
-  name: 'select_page',
+  name: 'nav_select_page',
   description: `Select a page as a context for future tool calls.`,
   annotations: {
     category: ToolCategory.NAVIGATION,
@@ -37,7 +37,7 @@ export const selectPage = defineTool({
     pageIdx: zod
       .number()
       .describe(
-        'The index of the page to select. Call list_pages to list pages.',
+        'The index of the page to select. Call nav_list_pages to list pages.',
       ),
   },
   handler: async (request, response, context) => {
@@ -50,7 +50,7 @@ export const selectPage = defineTool({
 });
 
 export const newPage = defineTool({
-  name: 'new_page',
+  name: 'nav_new_page',
   description: `Creates a new page and navigates to the specified URL. Waits for DOMContentLoaded event (not full page load). Default timeout is 10 seconds.`,
   annotations: {
     category: ToolCategory.NAVIGATION,
@@ -75,7 +75,7 @@ export const newPage = defineTool({
 });
 
 export const navigatePage = defineTool({
-  name: 'navigate_page',
+  name: 'nav_navigate_page',
   description: `Navigates the currently selected page to a URL, or performs back/forward/reload navigation. Waits for DOMContentLoaded event (not full page load). Default timeout is 10 seconds.`,
   annotations: {
     category: ToolCategory.NAVIGATION,

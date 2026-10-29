@@ -28,7 +28,7 @@ function withTimeout<T>(
 }
 
 export const evaluateScript = defineTool({
-  name: 'evaluate_script',
+  name: 'ins_evaluate_script',
   description: `Evaluate a JavaScript function inside the currently selected page. Returns the response as JSON
 so returned values have to JSON-serializable.`,
   annotations: {
@@ -81,7 +81,7 @@ Example with arguments: \`(el) => {
 });
 
 export const evaluateScriptToFile = defineTool({
-  name: 'evaluate_script_to_file',
+  name: 'ins_evaluate_script_to_file',
   description: `Evaluate a JavaScript function inside the currently selected page and write the string result to a local file. Use this for large data (canvas fingerprints, base64 images, etc.) that exceeds the MCP response size limit.`,
   annotations: {
     category: ToolCategory.DEBUGGING,
@@ -126,7 +126,7 @@ export const evaluateScriptToFile = defineTool({
 });
 
 export const injectPreloadScript = defineTool({
-  name: 'inject_preload_script',
+  name: 'ins_inject_preload_script',
   description:
     'Register a JavaScript snippet that will run on future document loads before page scripts execute. Use this for preload hooks, environment patches, and early instrumentation.',
   annotations: {

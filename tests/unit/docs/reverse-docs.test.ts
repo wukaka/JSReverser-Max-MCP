@@ -38,11 +38,10 @@ describe('reverse workflow docs', () => {
     const docsRootFiles = docsRootEntries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort();
 
     assert.ok(readme.includes('核心方法论'));
-    assert.ok(readme.includes('已沉淀链路'));
+    assert.ok(readme.includes('Skills（方法论层）'));
     assert.ok(readme.includes('支持的能力'));
     assert.ok(readme.includes('文档入口'));
     assert.ok(readme.includes('参考项目'));
-    assert.ok(readme.includes('[scripts/cases/README.md](scripts/cases/README.md)'));
     assert.deepStrictEqual(docsRootFiles, []);
     assert.ok(caseIndex.includes('某东 `h5st` 参数'));
     assert.ok(caseIndex.includes('[scripts/cases/jd-h5st-pure-node.mjs](jd-h5st-pure-node.mjs)'));
@@ -52,8 +51,8 @@ describe('reverse workflow docs', () => {
     assert.ok(caseIndex.includes('Status: abstract-case'));
     assert.ok(caseIndex.includes('Runtime: pure-node'));
     assert.ok(caseIndex.includes('字段规范'));
-    assert.ok(reverseIndex.includes('export_rebuild_bundle'));
-    assert.ok(reverseIndex.includes('record_reverse_evidence'));
+    assert.ok(reverseIndex.includes('rec_export_rebuild_bundle'));
+    assert.ok(reverseIndex.includes('rec_record_reverse_evidence'));
     assert.ok(artifactsDoc.includes('timeline.jsonl'));
     assert.ok(artifactsDoc.includes('最小必备文件'));
     assert.ok(artifactsDoc.includes('可选文件'));

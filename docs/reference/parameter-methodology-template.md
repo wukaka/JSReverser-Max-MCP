@@ -62,7 +62,7 @@
   - 当前代理 env log
   - 当前 `first divergence`
   - 对应页面证据
-- `diff_env_requirements` 仅作辅助，不替代代理日志。
+- `ver_diff_env_requirements` 仅作辅助，不替代代理日志。
 - 每次补丁后立刻复测并记录 `first divergence` 是否前移。
 - 失败时使用“上一版本可用快照”回退。
 

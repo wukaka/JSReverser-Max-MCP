@@ -125,13 +125,13 @@ function matchesTargetText(
 }
 
 function filterRuntimeEvidence(
-  records: Record<string, unknown>[],
+  records: Array<Record<string, unknown>>,
   targetKeywords: string[],
   targetUrlPatterns: string[],
   targetFunctionNames: string[],
   targetActionDescription: string,
   maxEvidenceItems: number,
-): Record<string, unknown>[] {
+): Array<Record<string, unknown>> {
   const filtered = (
     targetKeywords.length === 0 &&
     targetUrlPatterns.length === 0 &&
@@ -287,7 +287,7 @@ function inferMissingCapabilities(runtimeError: string, observedCapabilities: st
 }
 
 export const exportRebuildBundle = defineTool({
-  name: 'export_rebuild_bundle',
+  name: 'rec_export_rebuild_bundle',
   description: 'Export a local Node rebuild bundle from observed reverse-engineering evidence.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {
@@ -372,7 +372,7 @@ export const exportRebuildBundle = defineTool({
 });
 
 export const diffEnvRequirements = defineTool({
-  name: 'diff_env_requirements',
+  name: 'ver_diff_env_requirements',
   description: 'Compare local runtime failures with observed browser capabilities and suggest the next environment patches.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {

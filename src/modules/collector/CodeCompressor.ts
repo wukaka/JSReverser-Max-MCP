@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 代码压缩器 - 使用gzip压缩代码以减少token消耗
  *
@@ -12,9 +18,10 @@
  * 8. 进度回调
  */
 
-import { gzip, gunzip } from 'zlib';
-import { promisify } from 'util';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
+import { promisify } from 'node:util';
+import { gzip, gunzip } from 'node:zlib';
+
 import { logger } from '../../utils/logger.js';
 
 const gzipAsync = promisify(gzip);
@@ -78,7 +85,7 @@ export class CodeCompressor {
   private readonly CACHE_TTL = 3600 * 1000; // 1小时
 
   // 压缩缓存（LRU）
-  private cache: Map<string, CacheEntry> = new Map();
+  private cache = new Map<string, CacheEntry>();
 
   // 统计信息
   private stats: CompressionStats = {
@@ -188,7 +195,7 @@ export class CodeCompressor {
   /**
    * 解压代码（增强版）
    */
-  async decompress(compressed: string, maxRetries: number = 3): Promise<string> {
+  async decompress(compressed: string, maxRetries = 3): Promise<string> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -287,7 +294,7 @@ export class CodeCompressor {
   /**
    * 判断是否值得压缩
    */
-  shouldCompress(code: string, threshold: number = 1024): boolean {
+  shouldCompress(code: string, threshold = 1024): boolean {
     // 小于阈值的代码不压缩（压缩开销大于收益）
     return code.length > threshold;
   }

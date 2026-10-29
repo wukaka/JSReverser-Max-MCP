@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * BlackboxManager - 黑盒化管理
  * 
@@ -13,6 +19,7 @@
  */
 
 import type { CDPSession } from 'puppeteer';
+
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -21,7 +28,7 @@ import { logger } from '../../utils/logger.js';
  * 🔧 重构：使用共享的 CDP session，不再创建独立 session
  */
 export class BlackboxManager {
-  private blackboxedPatterns: Set<string> = new Set();
+  private blackboxedPatterns = new Set<string>();
 
   // 预定义的常用库模式（CDP Debugger.setBlackboxPatterns 要求正则表达式）
   static readonly COMMON_LIBRARY_PATTERNS = [

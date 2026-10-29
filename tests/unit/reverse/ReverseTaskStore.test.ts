@@ -62,7 +62,7 @@ describe('ReverseTaskStore', () => {
 
       await task.appendTimeline({
         stage: 'observe',
-        action: 'new_page',
+        action: 'nav_new_page',
         status: 'ok',
       });
       await task.writeSnapshot('cookies.json', {
@@ -82,7 +82,7 @@ describe('ReverseTaskStore', () => {
       });
       await reopened.appendTimeline({
         stage: 'capture',
-        action: 'create_hook',
+        action: 'ins_create_hook',
         status: 'ok',
       });
 
@@ -115,9 +115,9 @@ describe('ReverseTaskStore', () => {
 
       assert.strictEqual(timelineLines.length, 2);
       assert.strictEqual(timelineLines[0].stage, 'observe');
-      assert.strictEqual(timelineLines[0].action, 'new_page');
+      assert.strictEqual(timelineLines[0].action, 'nav_new_page');
       assert.strictEqual(timelineLines[1].stage, 'capture');
-      assert.strictEqual(timelineLines[1].action, 'create_hook');
+      assert.strictEqual(timelineLines[1].action, 'ins_create_hook');
       assert.ok(typeof timelineLines[0].timestamp === 'number');
       assert.ok(typeof timelineLines[1].timestamp === 'number');
     } finally {

@@ -74,16 +74,16 @@ Branch Markers:
 
 Observe Phase:
 1) Find weak-check and strict-check requests:
-   - First use: \`list_network_requests\`
-   - Then use: \`get_network_request\`
+   - First use: \`obs_list_network_requests\`
+   - Then use: \`obs_get_network_request\`
    - Collect:
      one weak-check sample and one strict-check sample, both with response body preview.
    - Output:
      one baseline pair for later A/B verification.
 
 2) Confirm initiator chain:
-   - First use: \`get_request_initiator\`
-   - Then use: \`list_scripts\`, \`get_script_source\`
+   - First use: \`loc_get_request_initiator\`
+   - Then use: \`obs_list_scripts\`, \`loc_get_script_source\`
    - Collect:
      runtime VM entry, encoder call site, cat-version retrieval path.
    - Expected chain example:
@@ -92,7 +92,7 @@ Observe Phase:
      one stable caller stack for the falcon sign path.
 
 3) Capture write point and VM interaction:
-   - First use: \`hook_function\` / \`create_hook\`
+   - First use: \`ins_hook_function\` / \`ins_create_hook\`
    - Collect:
      payload before encode, callback wiring, cat-version reads, final request send timing.
    - Output:
@@ -100,8 +100,8 @@ Observe Phase:
 
 Capture Phase:
 4) Confirm source correlation:
-   - First use: \`search_in_sources\`
-   - Then use: \`get_script_source\`, \`collect_code\`
+   - First use: \`loc_search_in_sources\`
+   - Then use: \`loc_get_script_source\`, \`obs_collect_code\`
    - Collect:
      VM object capability, loader order, encoder adapter, strict-check and weak-check path differences.
    - Expected capability example:
@@ -111,7 +111,7 @@ Capture Phase:
      business payload -> VM bridge -> encode runtime -> \`__NS_hxfalcon\`.
 
 5) Record evidence:
-   - First use: \`record_reverse_evidence\`
+   - First use: \`rec_record_reverse_evidence\`
    - Record:
      weak/strict request pair, VM call shape, cat-version source, first divergence notes.
    - Output:

@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 缓存适配器 - 将现有缓存适配到 UnifiedCacheManager
  * 
@@ -7,10 +13,11 @@
  * - 支持异步和同步方法
  */
 
-import type { CacheInstance, CacheStats } from './UnifiedCacheManager.js';
-import type { DetailedDataManager } from './detailedDataManager.js';
 import type { CodeCache } from '../modules/collector/CodeCache.js';
 import type { CodeCompressor } from '../modules/collector/CodeCompressor.js';
+
+import type { DetailedDataManager } from './detailedDataManager.js';
+import type { CacheInstance, CacheStats } from './UnifiedCacheManager.js';
 
 /**
  * DetailedDataManager 适配器

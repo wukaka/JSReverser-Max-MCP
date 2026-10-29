@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Integration tests for Gemini CLI
  * 
@@ -7,10 +13,12 @@
  * **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.6**
  */
 
-import { describe, it, before } from 'node:test';
 import assert from 'node:assert';
+import { spawn } from 'node:child_process';
+import { describe, it, before } from 'node:test';
+
 import { GeminiProvider } from '../../src/services/GeminiProvider.js';
-import { spawn } from 'child_process';
+
 
 const runGeminiIntegration = process.env.RUN_GEMINI_CLI_TESTS === 'true';
 
@@ -19,7 +27,7 @@ const runGeminiIntegration = process.env.RUN_GEMINI_CLI_TESTS === 'true';
  */
 function isGeminiCLIAvailable(): boolean {
   try {
-    const { spawnSync } = require('child_process');
+    const { spawnSync } = require('node:child_process');
     const result = spawnSync('gemini-cli', ['--version'], {
       stdio: 'pipe',
       timeout: 5000,

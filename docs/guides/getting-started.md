@@ -58,15 +58,15 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 
 连接成功后，优先验证下面几类工具：
 
-- `list_pages`
-- `list_network_requests`
-- `list_scripts`
+- `nav_list_pages`
+- `obs_list_network_requests`
+- `obs_list_scripts`
 
 能正常看到当前页面、请求和脚本，说明基础链路已经通了。
 
 ## 6. 可选：配置外部 AI 分析能力
 
-如果你要使用 `understand_code`，或者希望 `deobfuscate_code` / `detect_crypto` 拿到更强的 AI 辅助结果，优先在 MCP server 配置里通过 `env` 传入环境变量。
+如果你要使用 `loc_understand_code`，或者希望 `loc_deobfuscate_code` / `loc_detect_crypto` 拿到更强的 AI 辅助结果，优先在 MCP server 配置里通过 `env` 传入环境变量。
 
 例如在支持 `env` 的 MCP 客户端里，传入：
 
@@ -99,6 +99,6 @@ GEMINI_CLI_PATH=gemini-cli
 使用建议：
 
 - 只想跑核心逆向链路，不配也可以
-- 要用 `understand_code`，建议先配一个 provider
-- `detect_crypto` 只有在传 `useAI=true` 时才会启用 AI 增强
+- 要用 `loc_understand_code`，建议先配一个 provider
+- `loc_detect_crypto` 只有在传 `useAI=true` 时才会启用 AI 增强
 - `gemini` 没有 `GEMINI_API_KEY` 时，会尝试走本地 CLI

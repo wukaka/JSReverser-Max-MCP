@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {createHash} from 'node:crypto';
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -6,10 +12,10 @@ import type {HTTPResponse, Page} from 'puppeteer';
 
 import type {ReverseTaskHandle} from '../../types/index.js';
 import {logger} from '../../utils/logger.js';
-import {PageController} from '../collector/PageController.js';
+import type {PageController} from '../collector/PageController.js';
 
-import {WasmAnalyzer} from './WasmAnalyzer.js';
-import {WasmRuntimeInspector} from './WasmRuntimeInspector.js';
+import type {WasmAnalyzer} from './WasmAnalyzer.js';
+import type {WasmRuntimeInspector} from './WasmRuntimeInspector.js';
 import type {
   WasmDetectionResult,
   WasmLoadMethod,

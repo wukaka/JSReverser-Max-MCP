@@ -1,14 +1,23 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Configuration management for jshook-integration
  * Handles environment variables and system configuration
  */
 
+import { existsSync } from 'node:fs';
+
 import { config as dotenvConfig } from 'dotenv';
-import { existsSync } from 'fs';
+
 import { AIService } from '../services/AIService.js';
-import { OpenAIProvider } from '../services/OpenAIProvider.js';
 import { AnthropicProvider } from '../services/AnthropicProvider.js';
 import { GeminiProvider } from '../services/GeminiProvider.js';
+import { OpenAIProvider } from '../services/OpenAIProvider.js';
+
 import { resolveDefaultEnvPath } from './projectPaths.js';
 
 // Load .env file if it exists

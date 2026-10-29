@@ -19,8 +19,8 @@ import {defineTool} from './ToolDefinition.js';
 const DIRECTION_OPTIONS: readonly ['sent', 'received'] = ['sent', 'received'];
 
 export const listWebSocketConnections = defineTool({
-  name: 'list_websocket_connections',
-  description: `List all WebSocket connections. After getting wsid, use analyze_websocket_messages(wsid) FIRST to understand message patterns before viewing individual messages.`,
+  name: 'obs_list_websocket_connections',
+  description: `List all WebSocket connections. After getting wsid, use obs_analyze_websocket_messages(wsid) FIRST to understand message patterns before viewing individual messages.`,
   annotations: {
     category: ToolCategory.NETWORK,
     readOnlyHint: true,
@@ -67,8 +67,8 @@ export const listWebSocketConnections = defineTool({
 });
 
 export const getWebSocketMessages = defineTool({
-  name: 'get_websocket_messages',
-  description: `Gets messages for a WebSocket connection. IMPORTANT: For binary/protobuf messages (like live streaming), use analyze_websocket_messages FIRST to understand message types, then use groupId parameter to filter specific types. Default mode shows summary only.`,
+  name: 'obs_get_websocket_messages',
+  description: `Gets messages for a WebSocket connection. IMPORTANT: For binary/protobuf messages (like live streaming), use obs_analyze_websocket_messages FIRST to understand message types, then use groupId parameter to filter specific types. Default mode shows summary only.`,
   annotations: {
     category: ToolCategory.NETWORK,
     readOnlyHint: true,
@@ -83,7 +83,7 @@ export const getWebSocketMessages = defineTool({
       .string()
       .optional()
       .describe(
-        'Filter by group ID (A, B, C, ...). Get group IDs from analyze_websocket_messages first.',
+        'Filter by group ID (A, B, C, ...). Get group IDs from obs_analyze_websocket_messages first.',
       ),
     pageSize: zod
       .number()
@@ -181,8 +181,8 @@ export const getWebSocketMessages = defineTool({
 });
 
 export const getWebSocketMessage = defineTool({
-  name: 'get_websocket_message',
-  description: `Gets a single WebSocket message by its frame index. Use get_websocket_messages or analyze_websocket_messages first to find the frame index.`,
+  name: 'obs_get_websocket_message',
+  description: `Gets a single WebSocket message by its frame index. Use obs_get_websocket_messages or obs_analyze_websocket_messages first to find the frame index.`,
   annotations: {
     category: ToolCategory.NETWORK,
     readOnlyHint: true,
@@ -215,7 +215,7 @@ export const getWebSocketMessage = defineTool({
 });
 
 export const analyzeWebSocketMessages = defineTool({
-  name: 'analyze_websocket_messages',
+  name: 'obs_analyze_websocket_messages',
   description: `Analyzes WebSocket messages and groups them by pattern/fingerprint. Essential for understanding binary/protobuf message types in live streaming scenarios. Returns statistics and sample indices for each message type.`,
   annotations: {
     category: ToolCategory.NETWORK,
@@ -257,10 +257,10 @@ export const analyzeWebSocketMessages = defineTool({
     response.appendResponseLine(``);
     response.appendResponseLine(`### Usage`);
     response.appendResponseLine(
-      `- View group: \`get_websocket_messages(wsid=${request.params.wsid}, groupId="A")\``,
+      `- View group: \`obs_get_websocket_messages(wsid=${request.params.wsid}, groupId="A")\``,
     );
     response.appendResponseLine(
-      `- View single: \`get_websocket_message(wsid=${request.params.wsid}, frameIndex=0)\``,
+      `- View single: \`obs_get_websocket_message(wsid=${request.params.wsid}, frameIndex=0)\``,
     );
   },
 });

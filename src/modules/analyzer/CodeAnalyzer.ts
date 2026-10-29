@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
  /**
  * 代码理解模块 - AI辅助代码语义理解
  */
@@ -6,6 +12,8 @@ import * as parser from '@babel/parser';
 import traverseImport from '@babel/traverse';
 const traverse = (traverseImport as unknown as {default?: typeof traverseImport}).default ?? traverseImport;
 import * as t from '@babel/types';
+
+import type { LLMService } from '../../services/LLMService.js';
 import type {
   UnderstandCodeOptions,
   UnderstandCodeResult,
@@ -18,7 +26,6 @@ import type {
   ClassInfo,
   CallGraph,
 } from '../../types/index.js';
-import { LLMService } from '../../services/LLMService.js';
 import { logger } from '../../utils/logger.js';
 
 export class CodeAnalyzer {
@@ -887,7 +894,7 @@ export class CodeAnalyzer {
       // 尝试解析LLM返回的额外污点路径
       const jsonMatch = response.content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const llmResult = JSON.parse(jsonMatch[0]) as { taintPaths?: Array<any> };
+        const llmResult = JSON.parse(jsonMatch[0]) as { taintPaths?: any[] };
 
         if (Array.isArray(llmResult.taintPaths)) {
           logger.info(`LLM identified ${llmResult.taintPaths.length} additional taint paths`);
@@ -1195,7 +1202,7 @@ export class CodeAnalyzer {
     complexityScore = Math.max(0, complexityScore);
 
     // 3. 可维护性评分 (权重: 20%)
-    let maintainabilityScore = complexityMetrics?.maintainabilityIndex || 70;
+    const maintainabilityScore = complexityMetrics?.maintainabilityIndex || 70;
 
     // 4. 代码异味扣分 (权重: 15%)
     let codeSmellScore = 100;

@@ -1,9 +1,17 @@
-import {describe, it} from 'node:test';
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import assert from 'node:assert';
+import {describe, it} from 'node:test';
+
 import fc from 'fast-check';
-import {SmartCodeCollector} from '../../src/modules/collector/SmartCodeCollector.js';
-import {CodeCompressor} from '../../src/modules/collector/CodeCompressor.js';
+
 import {CodeCache} from '../../src/modules/collector/CodeCache.js';
+import {CodeCompressor} from '../../src/modules/collector/CodeCompressor.js';
+import {SmartCodeCollector} from '../../src/modules/collector/SmartCodeCollector.js';
 
 describe('Property 5/8/29/30/31: Cache and performance', () => {
   it('Property 5: summary mode compression', async () => {

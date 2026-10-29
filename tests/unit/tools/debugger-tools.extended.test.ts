@@ -224,7 +224,7 @@ describe('debugger tools extended', () => {
 
     assert.ok(response.lines.some((x) => x.includes('Found "abc"')));
     assert.ok(response.lines.some((x) => x.includes('not found')));
-    assert.ok(response.lines.some((x) => x.includes('Tip: Use get_script_source')));
+    assert.ok(response.lines.some((x) => x.includes('Tip: Use loc_get_script_source')));
   });
 
   it('covers breakpoint management and initiator rendering', async () => {
@@ -413,9 +413,9 @@ describe('debugger tools extended', () => {
         .split('\n')
         .map((line) => JSON.parse(line) as Record<string, unknown>);
 
-      assert.ok(evidenceLog.some((entry) => entry.tool === 'get_request_initiator'));
-      assert.ok(evidenceLog.some((entry) => entry.tool === 'monitor_events'));
-      assert.ok(evidenceLog.some((entry) => entry.tool === 'trace_function'));
+      assert.ok(evidenceLog.some((entry) => entry.tool === 'loc_get_request_initiator'));
+      assert.ok(evidenceLog.some((entry) => entry.tool === 'obs_monitor_events'));
+      assert.ok(evidenceLog.some((entry) => entry.tool === 'loc_trace_function'));
     } finally {
       runtime.reverseTaskStore = originalStore;
       await rm(rootDir, { recursive: true, force: true });

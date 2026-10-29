@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * StealthScripts2025 - 2024-2026 最新反检测脚本注入
  *
@@ -6,6 +12,7 @@
  */
 
 import type { Page } from 'puppeteer';
+
 import { logger } from '../../logger.js';
 
 // ==================== 类型定义 ====================
@@ -779,7 +786,7 @@ export class StealthScripts2025 {
     const conn = options.connection ?? { effectiveType: '4g', downlink: 10, rtt: 50, saveData: false };
 
     await page.evaluateOnNewDocument((c: ConnectionConfig) => {
-      /* eslint-disable @typescript-eslint/no-explicit-any */
+       
       if (!('connection' in navigator)) {
         Object.defineProperty(navigator, 'connection', {
           get: () => ({
@@ -795,7 +802,7 @@ export class StealthScripts2025 {
           configurable: true,
         });
       }
-      /* eslint-enable */
+       
     }, conn);
   }
 

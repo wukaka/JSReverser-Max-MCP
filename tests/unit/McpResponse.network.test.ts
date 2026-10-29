@@ -51,7 +51,7 @@ describe('McpResponse network detail formatting', () => {
     };
 
     const [text] = await response.handle(
-      'get_network_request',
+      'obs_get_network_request',
       context as never,
     );
 
@@ -101,7 +101,7 @@ describe('McpResponse network detail formatting', () => {
     };
 
     const [text] = await response.handle(
-      'get_network_request',
+      'obs_get_network_request',
       context as never,
     );
 

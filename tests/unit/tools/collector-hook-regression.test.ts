@@ -46,7 +46,7 @@ function makeResponse(): ToolResponseHarness {
 }
 
 describe('collector/hook regressions', () => {
-  it('collect_code should collect before top-priority view', async () => {
+  it('obs_collect_code should collect before top-priority view', async () => {
     const runtime = getJSHookRuntime() as unknown as {
       collector: {
         collect: RuntimeMethod;
@@ -85,7 +85,7 @@ describe('collector/hook regressions', () => {
         {},
       );
 
-      assert.strictEqual(collectCalls, 1, 'collect_code should trigger collector.collect first');
+      assert.strictEqual(collectCalls, 1, 'obs_collect_code should trigger collector.collect first');
       assert.ok(response.lines.join('\n').includes('"totalFiles": 1'));
     } finally {
       runtime.collector.collect = originalCollect;
@@ -93,7 +93,7 @@ describe('collector/hook regressions', () => {
     }
   });
 
-  it('get_hook_data should sync data from window.__hookStore', async () => {
+  it('obs_get_hook_data should sync data from window.__hookStore', async () => {
     const runtime = getJSHookRuntime() as unknown as {
       collector: {
         getActivePage: RuntimeMethod;
@@ -145,7 +145,7 @@ describe('collector/hook regressions', () => {
     }
   });
 
-  it('get_hook_data summary should include hooks that only have records', async () => {
+  it('obs_get_hook_data summary should include hooks that only have records', async () => {
     const runtime = getJSHookRuntime() as unknown as {
       collector: {
         getActivePage: RuntimeMethod;

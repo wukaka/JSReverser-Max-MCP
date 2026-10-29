@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 脚本管理器 - 薄封装CDP Debugger域
  * 
@@ -12,8 +18,9 @@
  */
 
 import type { CDPSession } from 'puppeteer';
-import type { CodeCollector } from '../collector/CodeCollector.js';
+
 import { logger } from '../../utils/logger.js';
+import type { CodeCollector } from '../collector/CodeCollector.js';
 
 export interface ScriptInfo {
   scriptId: string;
@@ -49,13 +56,13 @@ interface KeywordIndexEntry {
 
 export class ScriptManager {
   private cdpSession: CDPSession | null = null;
-  private scripts: Map<string, ScriptInfo> = new Map();
-  private scriptsByUrl: Map<string, ScriptInfo[]> = new Map();
+  private scripts = new Map<string, ScriptInfo>();
+  private scriptsByUrl = new Map<string, ScriptInfo[]>();
   private initialized = false;
 
   // 🆕 内存索引系统
-  private keywordIndex: Map<string, KeywordIndexEntry[]> = new Map();
-  private scriptChunks: Map<string, ScriptChunk[]> = new Map();
+  private keywordIndex = new Map<string, KeywordIndexEntry[]>();
+  private scriptChunks = new Map<string, ScriptChunk[]>();
   private readonly CHUNK_SIZE = 100 * 1024; // 100KB per chunk
 
   // ✅ 修复：保存事件监听器引用，便于清理

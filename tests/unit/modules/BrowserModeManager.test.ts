@@ -27,8 +27,6 @@ interface BrowserModeManagerHarness {
   browser?: BrowserLike;
   currentPage?: PageLike;
   sessionData?: { cookies?: Array<{ name: string; value: string }> };
-  autoLaunched?: boolean;
-  browserProcess?: { killed: boolean; kill(): void };
   launch(): Promise<BrowserLike>;
   newPage(): Promise<PageLike>;
   goto(url: string, page?: PageLike): Promise<void>;
@@ -42,7 +40,6 @@ describe('BrowserModeManager (mocked)', () => {
   it('reuses connected browser in launch', async () => {
     const manager = new BrowserModeManager({
       useStealthScripts: false,
-      autoLaunch: false,
     }) as unknown as BrowserModeManagerHarness;
     const connected = {
       isConnected: () => true,
@@ -56,7 +53,6 @@ describe('BrowserModeManager (mocked)', () => {
   it('creates new page, restores cookies and handles page close', async () => {
     const manager = new BrowserModeManager({
       useStealthScripts: false,
-      autoLaunch: false,
     }) as unknown as BrowserModeManagerHarness;
 
     let closeHandler: (() => void) | null = null;
@@ -96,7 +92,6 @@ describe('BrowserModeManager (mocked)', () => {
   it('navigates with current page or provided page and throws without page', async () => {
     const manager = new BrowserModeManager({
       useStealthScripts: false,
-      autoLaunch: false,
     }) as unknown as BrowserModeManagerHarness;
 
     await assert.rejects(
@@ -124,30 +119,20 @@ describe('BrowserModeManager (mocked)', () => {
     assert.strictEqual(gotoCount, 2);
   });
 
-  it('disconnects browser and terminates auto-launched process on close', async () => {
+  it('disconnects browser on close', async () => {
     const manager = new BrowserModeManager({
       useStealthScripts: false,
-      autoLaunch: false,
     }) as unknown as BrowserModeManagerHarness;
 
     let disconnected = 0;
-    let killed = 0;
     manager.browser = {
       disconnect: async () => {
         disconnected += 1;
       },
     };
-    manager.autoLaunched = true;
-    manager.browserProcess = {
-      killed: false,
-      kill: () => {
-        killed += 1;
-      },
-    };
 
     await manager.close();
     assert.strictEqual(disconnected, 1);
-    assert.strictEqual(killed, 1);
     assert.strictEqual(manager.getBrowser(), null);
     assert.strictEqual(manager.getCurrentPage(), null);
   });
@@ -155,7 +140,6 @@ describe('BrowserModeManager (mocked)', () => {
   it('handles disconnect failure branch on close', async () => {
     const manager = new BrowserModeManager({
       useStealthScripts: false,
-      autoLaunch: false,
     }) as unknown as BrowserModeManagerHarness;
 
     manager.browser = {

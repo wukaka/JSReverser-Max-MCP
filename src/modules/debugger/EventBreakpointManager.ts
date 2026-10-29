@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * EventBreakpointManager - 事件监听器断点管理
  * 
@@ -13,6 +19,7 @@
  */
 
 import type { CDPSession } from 'puppeteer';
+
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -33,7 +40,7 @@ export interface EventBreakpoint {
  * 🔧 重构：使用共享的 CDP session，不再创建独立 session
  */
 export class EventBreakpointManager {
-  private eventBreakpoints: Map<string, EventBreakpoint> = new Map();
+  private eventBreakpoints = new Map<string, EventBreakpoint>();
   private breakpointCounter = 0;
 
   // 预定义的事件类别

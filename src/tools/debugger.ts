@@ -21,7 +21,7 @@ import {getJSHookRuntime} from './runtime.js';
 import {defineTool} from './ToolDefinition.js';
 
 const BREAKPOINT_STALL_HINT =
-  'If execution appears stuck: run resume first. If it keeps pausing at the same location, remove_breakpoint and switch to trace_function(pause=false) or hook_function.';
+  'If execution appears stuck: run ins_resume first. If it keeps pausing at the same location, ins_remove_breakpoint and switch to loc_trace_function(pause=false) or ins_hook_function.';
 
 function formatUrlWithSourceMap(url: string, sourceMapURL?: string): string {
   return sourceMapURL ? `${url} [SourceMap: ${sourceMapURL}]` : url;
@@ -86,12 +86,12 @@ const reverseTaskParamsSchema = {
   goal: zod.string().optional().describe('Optional reverse-engineering goal for the task artifact.'),
 };
 
-type ReverseTaskParams = {
+interface ReverseTaskParams {
   taskId?: string;
   taskSlug?: string;
   targetUrl?: string;
   goal?: string;
-};
+}
 
 async function appendDebuggerEvidence(
   params: ReverseTaskParams,
@@ -114,7 +114,7 @@ async function appendDebuggerEvidence(
  * List all loaded JavaScript scripts in the current page.
  */
 export const listScripts = defineTool({
-  name: 'list_scripts',
+  name: 'obs_list_scripts',
   description:
     'Lists all JavaScript scripts loaded in the current page. Returns script ID, URL, and source map information. Use this to find scripts before setting breakpoints or searching.',
   annotations: {
@@ -174,9 +174,9 @@ export const listScripts = defineTool({
  * Get the source code of a script.
  */
 export const getScriptSource = defineTool({
-  name: 'get_script_source',
+  name: 'loc_get_script_source',
   description:
-    'Gets the source code of a JavaScript script by its script ID. Supports line range (for normal files) or character offset (for minified single-line files). Use list_scripts first to find the script ID.',
+    'Gets the source code of a JavaScript script by its script ID. Supports line range (for normal files) or character offset (for minified single-line files). Use obs_list_scripts first to find the script ID.',
   annotations: {
     title: 'Get Script Source',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -186,7 +186,7 @@ export const getScriptSource = defineTool({
     scriptId: zod
       .string()
       .describe(
-        'The script ID (from list_scripts) to get the source code for.',
+        'The script ID (from obs_list_scripts) to get the source code for.',
       ),
     startLine: zod
       .number()
@@ -298,7 +298,7 @@ export const getScriptSource = defineTool({
  * Useful for setting breakpoints in minified files.
  */
 export const findInScript = defineTool({
-  name: 'find_in_script',
+  name: 'loc_find_in_script',
   description:
     'Finds a string in a specific script and returns its exact line/column position with surrounding context. Ideal for setting breakpoints in minified files where the entire code is on one line.',
   annotations: {
@@ -309,7 +309,7 @@ export const findInScript = defineTool({
   schema: {
     scriptId: zod
       .string()
-      .describe('The script ID to search in (from list_scripts).'),
+      .describe('The script ID to search in (from obs_list_scripts).'),
     query: zod.string().describe('The string to find in the script.'),
     contextChars: zod
       .number()
@@ -421,7 +421,7 @@ export const findInScript = defineTool({
       response.appendResponseLine('```');
       response.appendResponseLine('');
       response.appendResponseLine(
-        `To set a breakpoint here: set_breakpoint(url: "${url}", lineNumber: ${lineNumber + 1}, columnNumber: ${columnNumber})`,
+        `To set a breakpoint here: ins_set_breakpoint(url: "${url}", lineNumber: ${lineNumber + 1}, columnNumber: ${columnNumber})`,
       );
     } catch (error) {
       response.appendResponseLine(
@@ -435,9 +435,9 @@ export const findInScript = defineTool({
  * Search for a string in all loaded scripts.
  */
 export const searchInSources = defineTool({
-  name: 'search_in_sources',
+  name: 'loc_search_in_sources',
   description:
-    'Searches for a string or regex pattern in all loaded JavaScript sources. Returns matching lines with script ID, URL, and line number. Use get_script_source with startLine/endLine to view full context around matches.',
+    'Searches for a string or regex pattern in all loaded JavaScript sources. Returns matching lines with script ID, URL, and line number. Use loc_get_script_source with startLine/endLine to view full context around matches.',
   annotations: {
     title: 'Search in Sources',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -602,7 +602,7 @@ export const searchInSources = defineTool({
 
       response.appendResponseLine('---');
       response.appendResponseLine(
-        'Tip: Use get_script_source(scriptId, startLine, endLine) to view full context around a match.',
+        'Tip: Use loc_get_script_source(scriptId, startLine, endLine) to view full context around a match.',
       );
     } catch (error) {
       response.appendResponseLine(
@@ -616,9 +616,9 @@ export const searchInSources = defineTool({
  * Set a breakpoint in a script.
  */
 export const setBreakpoint = defineTool({
-  name: 'set_breakpoint',
+  name: 'ins_set_breakpoint',
   description:
-    'Sets a breakpoint in a JavaScript file at the specified line. The breakpoint will trigger when the code executes. NOTE: Prefer hook_function or create_hook for monitoring function calls — breakpoints require pause/resume coordination and are error-prone in automated workflows. Use breakpoints only when you need to inspect local variables inside a function.',
+    'Sets a breakpoint in a JavaScript file at the specified line. The breakpoint will trigger when the code executes. NOTE: Prefer ins_hook_function or ins_create_hook for monitoring function calls — breakpoints require ins_pause/ins_resume coordination and are error-prone in automated workflows. Use breakpoints only when you need to inspect local variables inside a function.',
   annotations: {
     title: 'Set Breakpoint',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -710,9 +710,9 @@ export const setBreakpoint = defineTool({
  * Remove a breakpoint.
  */
 export const removeBreakpoint = defineTool({
-  name: 'remove_breakpoint',
+  name: 'ins_remove_breakpoint',
   description:
-    'Removes a breakpoint by its ID. Use list_breakpoints to see active breakpoints.',
+    'Removes a breakpoint by its ID. Use ins_list_breakpoints to see active breakpoints.',
   annotations: {
     title: 'Remove Breakpoint',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -722,7 +722,7 @@ export const removeBreakpoint = defineTool({
     breakpointId: zod
       .string()
       .describe(
-        'The breakpoint ID to remove (from list_breakpoints or set_breakpoint).',
+        'The breakpoint ID to remove (from ins_list_breakpoints or ins_set_breakpoint).',
       ),
   },
   handler: async (request, response, context) => {
@@ -754,7 +754,7 @@ export const removeBreakpoint = defineTool({
  * List all active breakpoints.
  */
 export const listBreakpoints = defineTool({
-  name: 'list_breakpoints',
+  name: 'ins_list_breakpoints',
   description: 'Lists all active breakpoints in the current debugging session.',
   annotations: {
     title: 'List Breakpoints',
@@ -804,7 +804,7 @@ export const listBreakpoints = defineTool({
  * Get the call stack (initiator) for a network request.
  */
 export const getRequestInitiator = defineTool({
-  name: 'get_request_initiator',
+  name: 'loc_get_request_initiator',
   description:
     'Gets the JavaScript call stack that initiated a network request. This helps trace which code triggered an API call.',
   annotations: {
@@ -817,7 +817,7 @@ export const getRequestInitiator = defineTool({
       .number()
       .int()
       .describe(
-        'The request ID (from list_network_requests) to get the initiator for.',
+        'The request ID (from obs_list_network_requests) to get the initiator for.',
       ),
     ...reverseTaskParamsSchema,
   },
@@ -896,7 +896,7 @@ export const getRequestInitiator = defineTool({
       }
 
       await appendDebuggerEvidence(request.params, {
-        tool: 'get_request_initiator',
+        tool: 'loc_get_request_initiator',
         requestId,
         requestUrl: httpRequest.url(),
         initiatorType: initiator.type,
@@ -923,7 +923,7 @@ export const getRequestInitiator = defineTool({
  * Get the current paused state and debug information.
  */
 export const getPausedInfo = defineTool({
-  name: 'get_paused_info',
+  name: 'ins_get_paused_info',
   description:
     'Gets information about the current paused state including call stack, current location, and scope variables. Use this after a breakpoint is hit to understand the execution context.',
   annotations: {
@@ -991,7 +991,7 @@ export const getPausedInfo = defineTool({
         `Auto-recovery detected: breakpoint ${autoRecovery.breakpointId} hit ${autoRecovery.hitCount} times in a short window.`,
       );
       response.appendResponseLine(
-        `Suggestion: move breakpoint to a lower-frequency path or use hook_function/trace_function(pause=false).`,
+        `Suggestion: move breakpoint to a lower-frequency path or use ins_hook_function/loc_trace_function(pause=false).`,
       );
       if (autoRecovery.error) {
         response.appendResponseLine(`Recovery warning: ${autoRecovery.error}`);
@@ -1068,7 +1068,7 @@ export const getPausedInfo = defineTool({
     }
 
     response.appendResponseLine(
-      '\n💡 Use resume, step_over, step_into, or step_out to continue.',
+      '\n💡 Use ins_resume, ins_step_over, ins_step_into, or ins_step_out to continue.',
     );
   },
 });
@@ -1077,7 +1077,7 @@ export const getPausedInfo = defineTool({
  * Resume execution after a breakpoint.
  */
 export const resume = defineTool({
-  name: 'resume',
+  name: 'ins_resume',
   description:
     'Resumes JavaScript execution after being paused at a breakpoint. Execution continues until the next breakpoint or completion.',
   annotations: {
@@ -1116,7 +1116,7 @@ export const resume = defineTool({
  * Pause execution.
  */
 export const pause = defineTool({
-  name: 'pause',
+  name: 'ins_pause',
   description:
     'Pauses JavaScript execution at the current point. Use this to interrupt running code.',
   annotations: {
@@ -1157,7 +1157,7 @@ export const pause = defineTool({
  * Step over to the next statement.
  */
 export const stepOver = defineTool({
-  name: 'step_over',
+  name: 'ins_step_over',
   description:
     'Steps over to the next statement, treating function calls as a single step. Use this to move through code without entering function bodies.',
   annotations: {
@@ -1184,7 +1184,7 @@ export const stepOver = defineTool({
     try {
       await debugger_.stepOver();
       response.appendResponseLine(
-        '⏭️ Stepped over. Use get_paused_info to see current state.',
+        '⏭️ Stepped over. Use ins_get_paused_info to see current state.',
       );
     } catch (error) {
       response.appendResponseLine(
@@ -1198,7 +1198,7 @@ export const stepOver = defineTool({
  * Step into the next function call.
  */
 export const stepInto = defineTool({
-  name: 'step_into',
+  name: 'ins_step_into',
   description:
     'Steps into the next function call. Use this to enter and debug function bodies.',
   annotations: {
@@ -1225,7 +1225,7 @@ export const stepInto = defineTool({
     try {
       await debugger_.stepInto();
       response.appendResponseLine(
-        '⬇️ Stepped into. Use get_paused_info to see current state.',
+        '⬇️ Stepped into. Use ins_get_paused_info to see current state.',
       );
     } catch (error) {
       response.appendResponseLine(
@@ -1239,7 +1239,7 @@ export const stepInto = defineTool({
  * Step out of the current function.
  */
 export const stepOut = defineTool({
-  name: 'step_out',
+  name: 'ins_step_out',
   description:
     'Steps out of the current function, continuing until the function returns. Use this to quickly exit a function.',
   annotations: {
@@ -1266,7 +1266,7 @@ export const stepOut = defineTool({
     try {
       await debugger_.stepOut();
       response.appendResponseLine(
-        '⬆️ Stepped out. Use get_paused_info to see current state.',
+        '⬆️ Stepped out. Use ins_get_paused_info to see current state.',
       );
     } catch (error) {
       response.appendResponseLine(
@@ -1280,7 +1280,7 @@ export const stepOut = defineTool({
  * Evaluate expression in the current call frame context.
  */
 export const evaluateOnCallframe = defineTool({
-  name: 'evaluate_on_callframe',
+  name: 'ins_evaluate_on_callframe',
   description:
     'Evaluates a JavaScript expression in the context of a specific call frame while paused. This allows you to inspect variables and execute code in the paused scope.',
   annotations: {
@@ -1373,9 +1373,9 @@ export const evaluateOnCallframe = defineTool({
  * Combines search + locate + set breakpoint in one step.
  */
 export const setBreakpointOnText = defineTool({
-  name: 'set_breakpoint_on_text',
+  name: 'ins_set_breakpoint_on_text',
   description:
-    'Sets a breakpoint on specific code (function name, statement, etc.) by searching for it and automatically determining the exact position. Works with both normal and minified files. NOTE: Prefer hook_function for monitoring function calls — it captures args/results without pausing execution. Use this only when you need to inspect local variables at a specific code location.',
+    'Sets a breakpoint on specific code (function name, statement, etc.) by searching for it and automatically determining the exact position. Works with both normal and minified files. NOTE: Prefer ins_hook_function for monitoring function calls — it captures args/results without pausing execution. Use this only when you need to inspect local variables at a specific code location.',
   annotations: {
     title: 'Set Breakpoint on Text',
     category: ToolCategory.REVERSE_ENGINEERING,
@@ -1529,7 +1529,7 @@ export const setBreakpointOnText = defineTool({
  * Hook a function to monitor its calls and return values.
  */
 export const hookFunction = defineTool({
-  name: 'hook_function',
+  name: 'ins_hook_function',
   description:
     'RECOMMENDED for reverse engineering: Hooks a JavaScript function to log its calls, arguments, and return values without pausing execution. More reliable than breakpoints for automated workflows. Use this as the default approach for monitoring functions.',
   annotations: {
@@ -1740,10 +1740,10 @@ export const hookFunction = defineTool({
           response.appendResponseLine(`- Log stack: ${logStack}`);
           response.appendResponseLine('');
           response.appendResponseLine(
-            'Function calls will be logged to console. Use list_console_messages to view.',
+            'Function calls will be logged to console. Use obs_list_console_messages to view.',
           );
           response.appendResponseLine(
-            `Use unhook_function(hookId: "${id}") to remove.`,
+            `Use ins_unhook_function(hookId: "${id}") to remove.`,
           );
         } else {
           response.appendResponseLine(
@@ -1763,7 +1763,7 @@ export const hookFunction = defineTool({
  * Remove a function hook.
  */
 export const unhookFunction = defineTool({
-  name: 'unhook_function',
+  name: 'ins_unhook_function',
   description: 'Removes a previously installed function hook.',
   annotations: {
     title: 'Unhook Function',
@@ -1773,7 +1773,7 @@ export const unhookFunction = defineTool({
   schema: {
     hookId: zod
       .string()
-      .describe('The hook ID to remove (from hook_function).'),
+      .describe('The hook ID to remove (from ins_hook_function).'),
   },
   handler: async (request, response, context) => {
     const {hookId} = request.params;
@@ -1820,7 +1820,7 @@ export const unhookFunction = defineTool({
  * List all active hooks.
  */
 export const listHooks = defineTool({
-  name: 'list_hooks',
+  name: 'ins_list_hooks',
   description: 'Lists all active function hooks.',
   annotations: {
     title: 'List Hooks',
@@ -1867,7 +1867,7 @@ export const listHooks = defineTool({
  * Inspect an object deeply.
  */
 export const inspectObject = defineTool({
-  name: 'inspect_object',
+  name: 'obs_inspect_object',
   description:
     'Deeply inspects a JavaScript object, showing its properties, prototype chain, and methods. Useful for understanding object structure.',
   annotations: {
@@ -2010,7 +2010,7 @@ export const inspectObject = defineTool({
  * Get browser storage data.
  */
 export const getStorage = defineTool({
-  name: 'get_storage',
+  name: 'obs_get_storage',
   description:
     'Gets browser storage data including cookies, localStorage, and sessionStorage.',
   annotations: {
@@ -2120,7 +2120,7 @@ export const getStorage = defineTool({
  * Set XHR/Fetch breakpoint.
  */
 export const breakOnXhr = defineTool({
-  name: 'break_on_xhr',
+  name: 'ins_break_on_xhr',
   description:
     'Sets a breakpoint that triggers when an XHR/Fetch request URL contains the specified string.',
   annotations: {
@@ -2169,7 +2169,7 @@ export const breakOnXhr = defineTool({
  * Remove XHR/Fetch breakpoint.
  */
 export const removeXhrBreakpoint = defineTool({
-  name: 'remove_xhr_breakpoint',
+  name: 'ins_remove_xhr_breakpoint',
   description: 'Removes an XHR/Fetch breakpoint.',
   annotations: {
     title: 'Remove XHR Breakpoint',
@@ -2212,7 +2212,7 @@ export const removeXhrBreakpoint = defineTool({
  * Monitor events on an element or window.
  */
 export const monitorEvents = defineTool({
-  name: 'monitor_events',
+  name: 'obs_monitor_events',
   description:
     'Monitors DOM events on a specified element or window. Events will be logged to console.',
   annotations: {
@@ -2320,7 +2320,7 @@ export const monitorEvents = defineTool({
         if ((result as {success: boolean}).success) {
           const r = result as {monitorId: string; eventCount: number};
           await appendDebuggerEvidence(request.params, {
-            tool: 'monitor_events',
+            tool: 'obs_monitor_events',
             monitorId: r.monitorId,
             selector,
             eventCount: r.eventCount,
@@ -2332,10 +2332,10 @@ export const monitorEvents = defineTool({
           response.appendResponseLine(`- Events: ${r.eventCount} types`);
           response.appendResponseLine('');
           response.appendResponseLine(
-            'Events will be logged to console. Use list_console_messages to view.',
+            'Events will be logged to console. Use obs_list_console_messages to view.',
           );
           response.appendResponseLine(
-            `Use stop_monitor(monitorId: "${r.monitorId}") to stop.`,
+            `Use obs_stop_monitor(monitorId: "${r.monitorId}") to stop.`,
           );
         } else {
           response.appendResponseLine(
@@ -2355,7 +2355,7 @@ export const monitorEvents = defineTool({
  * Stop monitoring events.
  */
 export const stopMonitor = defineTool({
-  name: 'stop_monitor',
+  name: 'obs_stop_monitor',
   description: 'Stops an event monitor.',
   annotations: {
     title: 'Stop Monitor',
@@ -2411,7 +2411,7 @@ export const stopMonitor = defineTool({
  * Uses conditional breakpoints to log without pausing.
  */
 export const traceFunction = defineTool({
-  name: 'trace_function',
+  name: 'loc_trace_function',
   description:
     'Traces calls to a function by its name in the source code. Works for ANY function including module-internal functions (webpack/rollup bundled). Uses "logpoints" (conditional breakpoints) to log arguments without pausing execution.',
   annotations: {
@@ -2518,7 +2518,7 @@ export const traceFunction = defineTool({
         }
         response.appendResponseLine('');
         response.appendResponseLine(
-          'Tip: Use search_in_sources to find the exact function signature, then use set_breakpoint.',
+          'Tip: Use loc_search_in_sources to find the exact function signature, then use ins_set_breakpoint.',
         );
         return;
       }
@@ -2581,7 +2581,7 @@ export const traceFunction = defineTool({
       );
 
       await appendDebuggerEvidence(request.params, {
-        tool: 'trace_function',
+        tool: 'loc_trace_function',
         traceId: id,
         functionName,
         breakpointId: breakpointInfo.breakpointId,
@@ -2606,10 +2606,10 @@ export const traceFunction = defineTool({
       );
       response.appendResponseLine('');
       response.appendResponseLine(
-        'Calls will be logged to console. Use list_console_messages to view.',
+        'Calls will be logged to console. Use obs_list_console_messages to view.',
       );
       response.appendResponseLine(
-        `Use remove_breakpoint(breakpointId: "${breakpointInfo.breakpointId}") to stop tracing.`,
+        `Use ins_remove_breakpoint(breakpointId: "${breakpointInfo.breakpointId}") to stop tracing.`,
       );
 
       // Show context

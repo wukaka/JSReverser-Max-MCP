@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * 反混淆主管线
  *
@@ -22,15 +28,17 @@ const traverse = (traverseImport as unknown as {default?: typeof traverseImport}
 import generateImport from '@babel/generator';
 const generate = (generateImport as unknown as {default?: typeof generateImport}).default ?? generateImport;
 import * as t from '@babel/types';
-import crypto from 'crypto';
+
+import crypto from 'node:crypto';
+
+import type { LLMService } from '../../services/LLMService.js';
 import type { DeobfuscateOptions, DeobfuscateResult, ObfuscationType, Transformation, UnresolvedPart } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
-import { LLMService } from '../../services/LLMService.js';
 
 // 子模块
 import { AdvancedDeobfuscator, type AdvancedDeobfuscateOptions } from './AdvancedDeobfuscator.js';
-import { JSVMPDeobfuscator } from './JSVMPDeobfuscator.js';
 import { ASTOptimizer } from './ASTOptimizer.js';
+import { JSVMPDeobfuscator } from './JSVMPDeobfuscator.js';
 import { PackerDeobfuscator, AAEncodeDeobfuscator, URLEncodeDeobfuscator, UniversalUnpacker } from './PackerDeobfuscator.js';
 
 // ==================== 扩展选项 ====================
@@ -64,7 +72,7 @@ export class Deobfuscator {
   private universalUnpacker: UniversalUnpacker;
 
   // 缓存
-  private stringArrays: Map<string, string[]> = new Map();
+  private stringArrays = new Map<string, string[]>();
   private resultCache = new Map<string, DeobfuscateResult>();
   private maxCacheSize = 100;
 

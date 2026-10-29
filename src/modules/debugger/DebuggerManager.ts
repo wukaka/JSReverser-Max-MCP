@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * DebuggerManager - 调试器核心管理
  * 
@@ -12,9 +18,11 @@
  * - 维护断点和暂停状态的映射
  */
 
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+
 import type { CDPSession } from 'puppeteer';
-import type { CodeCollector } from '../collector/CodeCollector.js';
-import { logger } from '../../utils/logger.js';
+
 import type {
   ScopeVariable,
   BreakpointHitCallback,
@@ -23,13 +31,15 @@ import type {
   GetScopeVariablesOptions,
   GetScopeVariablesResult,
 } from '../../types/index.js';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { logger } from '../../utils/logger.js';
+import { resolveDefaultDebuggerSessionsDir } from '../../utils/projectPaths.js';
+import type { CodeCollector } from '../collector/CodeCollector.js';
+
+import { BlackboxManager } from './BlackboxManager.js';
+import { EventBreakpointManager } from './EventBreakpointManager.js';
 import { WatchExpressionManager } from './WatchExpressionManager.js';
 import { XHRBreakpointManager } from './XHRBreakpointManager.js';
-import { EventBreakpointManager } from './EventBreakpointManager.js';
-import { BlackboxManager } from './BlackboxManager.js';
-import { resolveDefaultDebuggerSessionsDir } from '../../utils/projectPaths.js';
+
 
 /**
  * 断点信息
@@ -99,14 +109,14 @@ export class DebuggerManager {
   private enabled = false;
 
   // 断点管理
-  private breakpoints: Map<string, BreakpointInfo> = new Map();
+  private breakpoints = new Map<string, BreakpointInfo>();
 
   // 暂停状态
   private pausedState: PausedState | null = null;
   private pausedResolvers: Array<(state: PausedState) => void> = [];
 
   // ✨ 新增：断点命中回调
-  private breakpointHitCallbacks: Set<BreakpointHitCallback> = new Set();
+  private breakpointHitCallbacks = new Set<BreakpointHitCallback>();
 
   // ✨ 新增：异常断点状态
   private pauseOnExceptionsState: 'none' | 'uncaught' | 'all' = 'none';

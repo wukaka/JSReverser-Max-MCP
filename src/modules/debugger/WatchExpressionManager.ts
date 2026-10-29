@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * WatchExpressionManager - 监视表达式管理
  * 
@@ -12,8 +18,9 @@
  * - 提供值变化检测
  */
 
-import type { RuntimeInspector } from './RuntimeInspector.js';
 import { logger } from '../../utils/logger.js';
+
+import type { RuntimeInspector } from './RuntimeInspector.js';
 
 /**
  * 监视表达式
@@ -46,7 +53,7 @@ export interface WatchResult {
  * 监视表达式管理器
  */
 export class WatchExpressionManager {
-  private watches: Map<string, WatchExpression> = new Map();
+  private watches = new Map<string, WatchExpression>();
   private watchCounter = 0;
 
   constructor(private runtimeInspector: RuntimeInspector) {}

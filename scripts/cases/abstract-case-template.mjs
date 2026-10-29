@@ -74,8 +74,8 @@ Branch Markers:
 
 Observe Phase:
 1) Find the target request:
-   - First use: \`list_network_requests\`
-   - Then use: \`get_network_request\`
+   - First use: \`obs_list_network_requests\`
+   - Then use: \`obs_get_network_request\`
    - Collect:
      one successful request carrying \`<field_name>\` and companion fields.
    - Must answer:
@@ -84,15 +84,15 @@ Observe Phase:
      one stable request contract and one baseline browser sample.
 
 2) Confirm initiator chain:
-   - First use: \`get_request_initiator\`
-   - Then use: \`list_scripts\`, \`get_script_source\`, \`search_in_sources\`
+   - First use: \`loc_get_request_initiator\`
+   - Then use: \`obs_list_scripts\`, \`loc_get_script_source\`, \`loc_search_in_sources\`
    - Collect:
      business caller, request builder, signer wrapper, runtime module URL, function names.
    - Output:
      one stable caller stack and one candidate signer boundary.
 
 3) Confirm write point:
-   - First use: \`hook_function\` / \`create_hook\`
+   - First use: \`ins_hook_function\` / \`ins_create_hook\`
    - Collect:
      where \`<field_name>\` is attached,
      whether payload is assembled before sign or sign after canonicalization,
@@ -115,7 +115,7 @@ Capture Phase:
      one reusable input/output sample around signer boundary.
 
 5) Record evidence:
-   - First use: \`record_reverse_evidence\`
+   - First use: \`rec_record_reverse_evidence\`
    - Record:
      request sample, initiator, signer entry, seed schema, first divergence notes.
    - Output:

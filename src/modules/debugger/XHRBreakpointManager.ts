@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * XHRBreakpointManager - XHR/Fetch 断点管理
  * 
@@ -13,6 +19,7 @@
  */
 
 import type { CDPSession } from 'puppeteer';
+
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -32,7 +39,7 @@ export interface XHRBreakpoint {
  * 🔧 重构：使用共享的 CDP session，不再创建独立 session
  */
 export class XHRBreakpointManager {
-  private xhrBreakpoints: Map<string, XHRBreakpoint> = new Map();
+  private xhrBreakpoints = new Map<string, XHRBreakpoint>();
   private breakpointCounter = 0;
 
   /**

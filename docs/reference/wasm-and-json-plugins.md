@@ -4,7 +4,7 @@
 
 项目内置了一套面向 WebAssembly 逆向的工具链。
 
-### `collect_wasm`
+### `wasm_collect`
 
 用途：从目标页面采集 Wasm 模块及运行时事件，并在需要时写入 reverse task artifacts。
 
@@ -19,7 +19,7 @@
 - `maxModules?`: 最多保留的模块数
 - `captureBase64?`: 是否在采样阶段保留 base64 载荷
 
-### `list_wasm_modules`
+### `wasm_list_modules`
 
 用途：列出当前会话已经捕获到的 Wasm 模块。
 
@@ -28,7 +28,7 @@
 - `includeImports?`
 - `includeExports?`
 
-### `analyze_wasm_module`
+### `wasm_analyze_module`
 
 用途：对单个 Wasm 模块做静态结构分析。
 
@@ -47,7 +47,7 @@
 - `maxStringSlots?`
 - `maxSummaryLines?`
 
-### `inspect_wasm_exports`
+### `wasm_inspect_exports`
 
 用途：结合运行时事件总结导出函数的使用情况，并给出高价值入口点候选。
 
@@ -55,7 +55,7 @@
 
 - `moduleId`
 
-### `summarize_wasm_boundary`
+### `wasm_summarize_boundary`
 
 用途：构建 `JS -> memory bridge -> Wasm export -> sink` 的候选链路，帮助定位 Wasm 参与签名、编码、压缩、加密的边界位置。
 
@@ -64,7 +64,7 @@
 - `moduleId`
 - `maxChains?`
 
-### `analyze_wasm_signature_diff`
+### `wasm_signature_diff`
 
 用途：对比多个边界链路中的输入变化，识别更像签名材料的 header/query/body 字段。
 
@@ -74,7 +74,7 @@
 - `exportName?`
 - `maxChains?`
 
-### `decompile_wasm_module`
+### `wasm_decompile`
 
 用途：使用 `wabt/wasm2wat` 将 Wasm 反汇编为 WAT，并输出函数级行为摘要。
 

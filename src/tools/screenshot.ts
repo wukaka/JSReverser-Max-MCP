@@ -10,7 +10,7 @@ import {ToolCategory} from './categories.js';
 import {defineTool} from './ToolDefinition.js';
 
 export const screenshot = defineTool({
-  name: 'take_screenshot',
+  name: 'obs_take_screenshot',
   description: `Take a screenshot of the page or element.`,
   annotations: {
     category: ToolCategory.DEBUGGING,

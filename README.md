@@ -98,90 +98,90 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 
 | 能力分类 | 说明 | 工具函数 |
 | --- | --- | --- |
-| 页面与 Frame 管理 | 打开、切换、枚举页面与 iframe | `list_pages` |
-| | | `select_page` |
-| | | `new_page` |
-| | | `list_frames` |
-| | | `select_frame` |
-| 页面观察与脚本定位 | 先回答“页面里有哪些脚本、目标代码大概在哪” | `list_scripts` |
-| | | `get_script_source` |
-| | | `find_in_script` |
-| | | `search_in_scripts` |
-| Hook 与运行时采样 | 先做最小侵入式观测，确认运行时到底调用了什么 | `create_hook` |
-| | | `inject_hook` |
-| | | `get_hook_data` |
-| | | `hook_function` |
-| | | `trace_function` |
-| | | `unhook_function` |
-| | | `list_hooks` |
-| | | `remove_hook` |
-| | | `monitor_events` |
-| | | `stop_monitor` |
-| 断点与调试控制 | 当 hook 不够时，再进入暂停式调试 | `set_breakpoint` |
-| | | `set_breakpoint_on_text` |
-| | | `remove_breakpoint` |
-| | | `list_breakpoints` |
-| | | `resume` |
-| | | `pause` |
-| | | `step_over` / `step_into` / `step_out` |
-| | | `get_paused_info` |
-| | | `evaluate_on_callframe` |
-| | | `remove_xhr_breakpoint` |
-| 请求链路与网络分析 | 定位目标请求，确认是谁发起、带了什么参数 | `list_network_requests` |
-| | | `get_network_request` |
-| | | `get_request_initiator` |
-| | | `break_on_xhr` |
-| 页面状态与运行前检查 | 补看页面运行状态、控制台输出和本地状态依赖 | `check_browser_health` |
-| | | `list_console_messages` |
-| | | `get_console_message` |
-| | | `get_storage` |
-| | | `evaluate_script` |
-| | | `evaluate_script_to_file` |
-| | | `search_in_sources` |
-| | | `inspect_object` |
-| | | `get_performance_metrics` |
-| WebSocket 观察与消息分组 | 处理长连接、直播流或二进制帧时，用这组工具先分流再细看 | `list_websocket_connections` |
-| | | `analyze_websocket_messages` |
-| | | `get_websocket_messages` |
-| | | `get_websocket_message` |
-| 本地复现与补环境 | 把页面证据带回本地，逐步补齐 Node 运行环境 | `export_rebuild_bundle` |
-| | | `diff_env_requirements` |
-| | | `record_reverse_evidence` |
-| 页面自动化 | 做最小必要的页面操作，复现触发条件并辅助取证 | `navigate_page` |
-| | | `query_dom` |
-| | | `get_dom_structure` |
-| | | `find_clickable_elements` |
-| | | `click_element` |
-| | | `type_text` |
-| | | `wait_for_element` |
-| | | `take_screenshot` |
-| 注入与隐身 | 预注入脚本、stealth 特性与 UA 伪装 | `inject_preload_script` |
-| | | `inject_stealth` |
-| | | `list_stealth_features` |
-| | | `list_stealth_presets` |
-| | | `set_user_agent` |
-| 深度分析 | 在拿到代码和运行时证据后，继续做结构理解与去混淆 | `collect_code` |
-| | | `collection_diff` |
-| | | `summarize_code` |
-| | | `understand_code` |
-| | | `deobfuscate_code` |
-| | | `risk_panel` |
-| 会话与登录态复用 | 保存并复用浏览器会话与登录态 | `save_session_state` |
-| | | `restore_session_state` |
-| | | `dump_session_state` |
-| | | `load_session_state` |
-| | | `list_session_states` |
-| | | `delete_session_state` |
-| | | `export_session_report` |
-| Wasm 与 JSON 插件 | 覆盖采集、结构分析、导出使用情况、JS→Wasm 边界链路和 WAT 反汇编；Hook 体系内置 `json` 插件，同时 Hook `JSON.stringify` / `JSON.parse` | `collect_wasm` |
-| | | `list_wasm_modules` |
-| | | `analyze_wasm_module` |
-| | | `inspect_wasm_exports` |
-| | | `summarize_wasm_boundary` |
-| | | `analyze_wasm_signature_diff` |
-| | | `decompile_wasm_module` |
+| 页面与 Frame 管理 | 打开、切换、枚举页面与 iframe | `nav_list_pages` |
+| | | `nav_select_page` |
+| | | `nav_new_page` |
+| | | `nav_list_frames` |
+| | | `nav_select_frame` |
+| 页面观察与脚本定位 | 先回答“页面里有哪些脚本、目标代码大概在哪” | `obs_list_scripts` |
+| | | `loc_get_script_source` |
+| | | `loc_find_in_script` |
+| | | `loc_search_in_scripts` |
+| Hook 与运行时采样 | 先做最小侵入式观测，确认运行时到底调用了什么 | `ins_create_hook` |
+| | | `ins_inject_hook` |
+| | | `obs_get_hook_data` |
+| | | `ins_hook_function` |
+| | | `loc_trace_function` |
+| | | `ins_unhook_function` |
+| | | `ins_list_hooks` |
+| | | `ins_remove_hook` |
+| | | `obs_monitor_events` |
+| | | `obs_stop_monitor` |
+| 断点与调试控制 | 当 hook 不够时，再进入暂停式调试 | `ins_set_breakpoint` |
+| | | `ins_set_breakpoint_on_text` |
+| | | `ins_remove_breakpoint` |
+| | | `ins_list_breakpoints` |
+| | | `ins_resume` |
+| | | `ins_pause` |
+| | | `ins_step_over` / `ins_step_into` / `ins_step_out` |
+| | | `ins_get_paused_info` |
+| | | `ins_evaluate_on_callframe` |
+| | | `ins_remove_xhr_breakpoint` |
+| 请求链路与网络分析 | 定位目标请求，确认是谁发起、带了什么参数 | `obs_list_network_requests` |
+| | | `obs_get_network_request` |
+| | | `loc_get_request_initiator` |
+| | | `ins_break_on_xhr` |
+| 页面状态与运行前检查 | 补看页面运行状态、控制台输出和本地状态依赖 | `sys_check_browser_health` |
+| | | `obs_list_console_messages` |
+| | | `obs_get_console_message` |
+| | | `obs_get_storage` |
+| | | `ins_evaluate_script` |
+| | | `ins_evaluate_script_to_file` |
+| | | `loc_search_in_sources` |
+| | | `obs_inspect_object` |
+| | | `obs_get_performance_metrics` |
+| WebSocket 观察与消息分组 | 处理长连接、直播流或二进制帧时，用这组工具先分流再细看 | `obs_list_websocket_connections` |
+| | | `obs_analyze_websocket_messages` |
+| | | `obs_get_websocket_messages` |
+| | | `obs_get_websocket_message` |
+| 本地复现与补环境 | 把页面证据带回本地，逐步补齐 Node 运行环境 | `rec_export_rebuild_bundle` |
+| | | `ver_diff_env_requirements` |
+| | | `rec_record_reverse_evidence` |
+| 页面自动化 | 做最小必要的页面操作，复现触发条件并辅助取证 | `nav_navigate_page` |
+| | | `obs_query_dom` |
+| | | `obs_get_dom_structure` |
+| | | `loc_find_clickable_elements` |
+| | | `nav_click_element` |
+| | | `nav_type_text` |
+| | | `nav_wait_for_element` |
+| | | `obs_take_screenshot` |
+| 注入与隐身 | 预注入脚本、stealth 特性与 UA 伪装 | `ins_inject_preload_script` |
+| | | `ins_inject_stealth` |
+| | | `ins_list_stealth_features` |
+| | | `ins_list_stealth_presets` |
+| | | `ins_set_user_agent` |
+| 深度分析 | 在拿到代码和运行时证据后，继续做结构理解与去混淆 | `obs_collect_code` |
+| | | `ver_collection_diff` |
+| | | `loc_summarize_code` |
+| | | `loc_understand_code` |
+| | | `loc_deobfuscate_code` |
+| | | `ver_risk_panel` |
+| 会话与登录态复用 | 保存并复用浏览器会话与登录态 | `rec_save_session_state` |
+| | | `rec_restore_session_state` |
+| | | `rec_dump_session_state` |
+| | | `rec_load_session_state` |
+| | | `rec_list_session_states` |
+| | | `rec_delete_session_state` |
+| | | `rec_export_session_report` |
+| Wasm 与 JSON 插件 | 覆盖采集、结构分析、导出使用情况、JS→Wasm 边界链路和 WAT 反汇编；Hook 体系内置 `json` 插件，同时 Hook `JSON.stringify` / `JSON.parse` | `wasm_collect` |
+| | | `wasm_list_modules` |
+| | | `wasm_analyze_module` |
+| | | `wasm_inspect_exports` |
+| | | `wasm_summarize_boundary` |
+| | | `wasm_signature_diff` |
+| | | `wasm_decompile` |
 
-> 注：强依赖外部 AI 的只有 `understand_code`；`detect_crypto`、`analyze_target`、`risk_panel`、`deobfuscate_code` 属于可选增强。外部 LLM 当前支持 `openai` / `anthropic` / `gemini`，配置通过进程环境变量完成，MCP 客户端里在 server 配置的 `env` 中传入（如 `DEFAULT_LLM_PROVIDER` + 对应 `*_API_KEY`）。不配置也能使用浏览器接管、Hook / 断点 / Network / WebSocket、`collect_code`、`export_rebuild_bundle` 等核心能力。完整 provider 列表、`.env` 写法与逐功能依赖说明见 [docs/guides/ai-configuration.md](docs/guides/ai-configuration.md)。
+> 注：强依赖外部 AI 的只有 `loc_understand_code`；`loc_detect_crypto`、`run_analyze_target`、`ver_risk_panel`、`loc_deobfuscate_code` 属于可选增强。外部 LLM 当前支持 `openai` / `anthropic` / `gemini`，配置通过进程环境变量完成，MCP 客户端里在 server 配置的 `env` 中传入（如 `DEFAULT_LLM_PROVIDER` + 对应 `*_API_KEY`）。不配置也能使用浏览器接管、Hook / 断点 / Network / WebSocket、`obs_collect_code`、`rec_export_rebuild_bundle` 等核心能力。完整 provider 列表、`.env` 写法与逐功能依赖说明见 [docs/guides/ai-configuration.md](docs/guides/ai-configuration.md)。
 >
 - 完整参数说明见 [docs/reference/tool-reference.md](docs/reference/tool-reference.md)。
 - 按逆向流程选工具可继续看 [docs/reference/reverse-workflow.md](docs/reference/reverse-workflow.md)。

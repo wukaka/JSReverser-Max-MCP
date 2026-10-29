@@ -1,3 +1,9 @@
+
+/**
+ * @license
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 /**
  * Gemini Provider Implementation
  * 
@@ -5,8 +11,9 @@
  * Supports both API mode (with API key) and CLI mode (using gemini-cli)
  */
 
-import { spawn, spawnSync } from 'child_process';
-import { existsSync } from 'fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+
 import type { AIProvider, AIMessage, AIResponse, ChatOptions } from './AIService.js';
 
 /**

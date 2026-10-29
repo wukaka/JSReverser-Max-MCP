@@ -13,7 +13,7 @@ import {defineTool} from './ToolDefinition.js';
 
 
 export const deobfuscateCode = defineTool({
-  name: 'deobfuscate_code',
+  name: 'loc_deobfuscate_code',
   description: 'AI-assisted JavaScript deobfuscation.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -31,7 +31,7 @@ export const deobfuscateCode = defineTool({
 });
 
 export const understandCode = defineTool({
-  name: 'understand_code',
+  name: 'loc_understand_code',
   description: 'Analyze code structure/business/security with AI + static analysis.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -48,7 +48,7 @@ export const understandCode = defineTool({
 });
 
 export const summarizeCode = defineTool({
-  name: 'summarize_code',
+  name: 'loc_summarize_code',
   description: 'Summarize one code file, multiple files, or project-level context.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -95,7 +95,7 @@ export const summarizeCode = defineTool({
 });
 
 export const detectCrypto = defineTool({
-  name: 'detect_crypto',
+  name: 'loc_detect_crypto',
   description: 'Detect cryptographic algorithms/libraries from JavaScript source.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -510,13 +510,13 @@ function buildActionPlan(result: {
   const addStep = (text: string) => {
     steps.push(`${steps.length + 1}) ${text}`);
   };
-  addStep(`调用 collect_code，参数: {"url":"${result.target}","returnMode":"top-priority","topN":10}`);
+  addStep(`调用 obs_collect_code，参数: {"url":"${result.target}","returnMode":"top-priority","topN":10}`);
 
   if (result.suspiciousFlows.length > 0) {
     const flow = result.suspiciousFlows[0];
     addStep(`重点观察可疑请求: ${flow.method} ${flow.url}，命中指标: ${flow.signatureIndicators.join(', ')}`);
   } else {
-    addStep('先触发登录/下单/关键业务操作，再重新运行 analyze_target 捕获动态请求');
+    addStep('先触发登录/下单/关键业务操作，再重新运行 run_analyze_target 捕获动态请求');
   }
 
   if (result.priorityTargets.length > 0) {
@@ -530,18 +530,18 @@ function buildActionPlan(result: {
 
   if (result.signatureHints.candidateFunctions.length > 0) {
     const fnName = result.signatureHints.candidateFunctions[0];
-    addStep(`使用 search_in_scripts 搜索函数名 "${fnName}"，并用 understand_code 深挖调用链`);
+    addStep(`使用 loc_search_in_scripts 搜索函数名 "${fnName}"，并用 loc_understand_code 深挖调用链`);
   } else {
-    addStep('使用 search_in_scripts 搜索关键词 sign/token/auth/nonce，定位签名生成点');
+    addStep('使用 loc_search_in_scripts 搜索关键词 sign/token/auth/nonce，定位签名生成点');
   }
 
   if (result.topHookIds.length > 0) {
-    addStep(`调用 get_hook_data 查看首个 hook 数据: {"hookId":"${result.topHookIds[0].hookId}"}`);
+    addStep(`调用 obs_get_hook_data 查看首个 hook 数据: {"hookId":"${result.topHookIds[0].hookId}"}`);
   } else {
-    addStep('用 create_hook + inject_hook 手工注入 fetch/xhr hook 后再采样');
+    addStep('用 ins_create_hook + ins_inject_hook 手工注入 fetch/xhr hook 后再采样');
   }
 
-  addStep('对疑似签名代码调用 deobfuscate_code（aggressive=true）并复测请求参数变化');
+  addStep('对疑似签名代码调用 loc_deobfuscate_code（aggressive=true）并复测请求参数变化');
   return steps;
 }
 
@@ -657,7 +657,7 @@ async function installAnalyzeHooks(
   for (const type of pickHookTypes(hookPreset)) {
     const created = runtime.hookManager.create({
       type,
-      description: `[analyze_target] ${type} hook`,
+      description: `[run_analyze_target] ${type} hook`,
       action: 'log',
     });
     if (autoInjectHooks) {
@@ -787,14 +787,14 @@ async function runAnalyzeTargetWorkflow(runtime: ReturnType<typeof getJSHookRunt
     }),
     nextActions: [
       crypto.algorithms.length > 0 ? 'Focus on crypto-related files from top-priority list.' : null,
-      hookTimeline.length === 0 ? 'Trigger page interactions and rerun get_hook_data / analyze_target.' : null,
+      hookTimeline.length === 0 ? 'Trigger page interactions and rerun obs_get_hook_data / run_analyze_target.' : null,
       understand.securityRisks.length > 0 ? 'Review high-severity security findings and verify call stacks.' : null,
     ].filter((item): item is string => Boolean(item)),
   };
 }
 
 export const recordReverseEvidence = defineTool({
-  name: 'record_reverse_evidence',
+  name: 'rec_record_reverse_evidence',
   description: 'Append structured reverse-engineering evidence to a task artifact log.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {
@@ -874,7 +874,7 @@ export const recordReverseEvidence = defineTool({
 });
 
 export const analyzeTarget = defineTool({
-  name: 'analyze_target',
+  name: 'run_analyze_target',
   description: 'One-shot reverse workflow: collect code, run security/crypto analysis, optional deobfuscation, and hook timeline correlation.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: false},
   schema: {
@@ -957,7 +957,7 @@ function toMarkdownReport(report: {
 }
 
 export const riskPanel = defineTool({
-  name: 'risk_panel',
+  name: 'ver_risk_panel',
   description: 'Build a combined risk score from analyzer, crypto detector and hook signals.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
@@ -974,7 +974,7 @@ export const riskPanel = defineTool({
     if (!code) {
       const top = runtime.collector.getTopPriorityFiles(request.params.topN ?? 5);
       if (top.files.length === 0) {
-        throw new Error('No code provided and no collected files found. Run collect_code first.');
+        throw new Error('No code provided and no collected files found. Run obs_collect_code first.');
       }
       code = top.files.map((file) => `// ${file.url}\n${file.content}`).join('\n\n');
     }
@@ -1040,7 +1040,7 @@ export const riskPanel = defineTool({
 });
 
 export const exportSessionReport = defineTool({
-  name: 'export_session_report',
+  name: 'rec_export_session_report',
   description: 'Export current reverse-engineering session as JSON or Markdown.',
   annotations: {category: ToolCategory.REVERSE_ENGINEERING, readOnlyHint: true},
   schema: {
