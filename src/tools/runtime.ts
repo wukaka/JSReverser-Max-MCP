@@ -4,7 +4,7 @@
  * Copyright 2026 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-import {AISummarizer} from '../modules/analyzer/AISummarizer.js';
+import {CodeSummarizer} from '../modules/analyzer/AISummarizer.js';
 import {CodeAnalyzer} from '../modules/analyzer/CodeAnalyzer.js';
 import {BrowserModeManager} from '../modules/browser/BrowserModeManager.js';
 import {CodeCollector} from '../modules/collector/CodeCollector.js';
@@ -18,7 +18,6 @@ import {WasmCollector} from '../modules/wasm/WasmCollector.js';
 import {WasmDecompiler} from '../modules/wasm/WasmDecompiler.js';
 import {WasmRuntimeInspector} from '../modules/wasm/WasmRuntimeInspector.js';
 import {ReverseTaskStore} from '../reverse/ReverseTaskStore.js';
-import {LLMService} from '../services/LLMService.js';
 import type {Page} from '../third_party/index.js';
 import type {PuppeteerConfig} from '../types/index.js';
 import {
@@ -38,9 +37,8 @@ export interface JSHookRuntime {
   domInspector: DOMInspector;
   pageController: PageController;
   hookManager: HookManager;
-  llmService: LLMService;
   analyzer: CodeAnalyzer;
-  summarizer: AISummarizer;
+  summarizer: CodeSummarizer;
   deobfuscator: Deobfuscator;
   cryptoDetector: CryptoDetector;
   wasmCollector: WasmCollector;
@@ -80,7 +78,6 @@ export function getJSHookRuntime(): JSHookRuntime {
   const domInspector = new DOMInspector(collector);
   const pageController = new PageController(collector);
   const hookManager = new HookManager();
-  const llmService = new LLMService();
   const wasmAnalyzer = new WasmAnalyzer();
   const wasmDecompiler = new WasmDecompiler();
   const wasmRuntimeInspector = new WasmRuntimeInspector();
@@ -98,11 +95,10 @@ export function getJSHookRuntime(): JSHookRuntime {
     domInspector,
     pageController,
     hookManager,
-    llmService,
-    analyzer: new CodeAnalyzer(llmService),
-    summarizer: new AISummarizer(llmService),
-    deobfuscator: new Deobfuscator(llmService),
-    cryptoDetector: new CryptoDetector(llmService),
+    analyzer: new CodeAnalyzer(),
+    summarizer: new CodeSummarizer(),
+    deobfuscator: new Deobfuscator(),
+    cryptoDetector: new CryptoDetector(),
     wasmCollector: new WasmCollector(pageController, wasmAnalyzer, wasmRuntimeInspector),
     wasmAnalyzer,
     wasmDecompiler,

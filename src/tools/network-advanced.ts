@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {zod} from '../third_party/index.js';
 
 import {
   buildReplaySpec,
@@ -24,6 +23,7 @@ import {
   recordReplayAudit,
 } from '../modules/safety/RequestScope.js';
 import {recordTaskEvidence} from '../modules/task/TaskContext.js';
+import {zod} from '../third_party/index.js';
 
 import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';

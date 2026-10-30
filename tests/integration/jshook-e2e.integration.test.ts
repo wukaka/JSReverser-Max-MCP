@@ -9,7 +9,6 @@ import {describe, it} from 'node:test';
 
 import {SmartCodeCollector} from '../../src/modules/collector/SmartCodeCollector.js';
 import {HookManager} from '../../src/modules/hook/HookManager.js';
-import {GeminiProvider} from '../../src/services/GeminiProvider.js';
 import {ToolExecutionScheduler} from '../../src/utils/ToolExecutionScheduler.js';
 
 const runE2E = process.env.RUN_E2E_TESTS === 'true';
@@ -26,11 +25,6 @@ describe('E2E Scenarios', {skip: !runE2E}, () => {
     const manager = new HookManager();
     const hook = manager.create({type: 'fetch'} as any);
     assert.ok(hook.script.includes('fetch'));
-  });
-
-  it('Scenario 3: gemini CLI mode flow', async () => {
-    const provider = new GeminiProvider({useAPI: false, cliPath: 'non-existent-gemini-cli-command'});
-    await assert.rejects(async () => provider.chat([{role: 'user', content: 'test'}]), /gemini-cli is not available/);
   });
 
   it('Scenario 4: multi-tool concurrency flow', async () => {

@@ -7,13 +7,13 @@ import assert from 'node:assert';
 import {describe, it} from 'node:test';
 
 import type {HTTPRequest} from '../../../src/third_party/index.js';
-import {getJSHookRuntime} from '../../../src/tools/runtime.js';
 import {
   diffNetworkRequests,
   exportRequest,
   headerAblation,
   replayRequest,
 } from '../../../src/tools/network-advanced.js';
+import {getJSHookRuntime} from '../../../src/tools/runtime.js';
 
 interface ResponseHarness {
   lines: string[];

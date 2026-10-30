@@ -726,9 +726,6 @@ Example with arguments: `(el) => {
 - **`renameVariables`** — `boolean` · optional
   - For deobfuscate: rename variables to readable names.
 
-- **`useAI`** — `boolean` · optional
-  - For crypto: enable LLM-based deep analysis.
-
 - **`mode`** — `enum` · optional
   - Allowed: `single` | `batch` | `project`
   - For action=summarize: scope.
@@ -1187,9 +1184,6 @@ Example with arguments: `(el) => {
 
 - **`topN`** — `number` · optional
   - Number of top-priority files used for analysis.
-
-- **`useAI`** — `boolean` · optional
-  - Enable LLM-assisted analysis.
 
 - **`runDeobfuscation`** — `boolean` · optional
   - Run the deobfuscation pipeline on selected files.

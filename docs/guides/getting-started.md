@@ -64,41 +64,6 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 
 能正常看到当前页面、请求和脚本，说明基础链路已经通了。
 
-## 6. 可选：配置外部 AI 分析能力
+## 6. 关于代码分析
 
-如果你要使用 `loc_analyze_code`，或者希望 `loc_analyze_code` / `loc_analyze_code` 拿到更强的 AI 辅助结果，优先在 MCP server 配置里通过 `env` 传入环境变量。
-
-例如在支持 `env` 的 MCP 客户端里，传入：
-
-```toml
-[mcp_servers.jsreverser-max-mcp.env]
-DEFAULT_LLM_PROVIDER = "gemini"
-GEMINI_API_KEY = "your_key"
-GEMINI_MODEL = "gemini-2.0-flash-exp"
-```
-
-如果你是直接在项目目录本地运行 `npm run start` 或 `node build/src/index.js`，再使用 `.env`：
-
-```bash
-DEFAULT_LLM_PROVIDER=gemini
-
-# OpenAI
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o
-
-# Anthropic / Claude
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-
-# Gemini
-GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.0-flash-exp
-GEMINI_CLI_PATH=gemini-cli
-```
-
-使用建议：
-
-- 只想跑核心逆向链路，不配也可以
-- 要用 `loc_analyze_code`，建议先配一个 provider
-- `loc_analyze_code(action=crypto)` 只有在传 `useAI=true` 时才会启用 AI 增强
-- `gemini` 没有 `GEMINI_API_KEY` 时，会尝试走本地 CLI
+本服务不内置外部 LLM。`loc_analyze_code` 只返回确定性骨架（AST 结构、数据流、加密/弱算法规则检测、代码片段）；`understand` / `summarize` 的语义归纳、`deobfuscate` 解不了的 VMP/JSFuck 还原，由你（主模型）在工具输出的代码基础上直接完成，无需任何 API key。

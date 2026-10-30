@@ -29,7 +29,6 @@ export const analyzeCode = defineTool({
     focus: zod.enum(['all', 'structure', 'business', 'security']).optional(),
     aggressive: zod.boolean().optional(),
     renameVariables: zod.boolean().optional(),
-    useAI: zod.boolean().optional(),
     mode: zod.enum(['single', 'batch', 'project']).optional().describe('For action=summarize: scope.'),
     includeHookSignals: zod.boolean().optional(),
     hookId: zod.string().optional(),
@@ -68,8 +67,7 @@ export const analyzeCode = defineTool({
       if (!params.code) {
         throw new Error('code is required for action=crypto.');
       }
-      const cryptoOptions = {code: params.code, useAI: params.useAI};
-      append(await runtime.cryptoDetector.detect(cryptoOptions));
+      append(await runtime.cryptoDetector.detect({code: params.code}));
       return;
     }
 
@@ -577,7 +575,7 @@ function buildActionPlan(result: {
 
   if (result.signatureHints.candidateFunctions.length > 0) {
     const fnName = result.signatureHints.candidateFunctions[0];
-    addStep(`使用 loc_search_in_sources 搜索函数名 "${fnName}"，并用 loc_analyze_code(action=understand) 深挖调用链`);
+    addStep(`使用 loc_search_in_sources 搜索函数名 "${fnName}"，取到源码后由你自己读代码、沿调用链深挖（语义理解不再走工具）`);
   } else {
     addStep('使用 loc_search_in_sources 搜索关键词 sign/token/auth/nonce，定位签名生成点');
   }
@@ -627,7 +625,6 @@ function buildStopConditions(input: {
 type AnalyzeTargetParams = zod.infer<zod.ZodObject<{
   url: zod.ZodString;
   topN: zod.ZodOptional<zod.ZodNumber>;
-  useAI: zod.ZodOptional<zod.ZodBoolean>;
   runDeobfuscation: zod.ZodOptional<zod.ZodBoolean>;
   hookPreset: zod.ZodOptional<zod.ZodEnum<['none', 'api-signature', 'network-core']>>;
   autoInjectHooks: zod.ZodOptional<zod.ZodBoolean>;
@@ -927,7 +924,6 @@ export const analyzeTarget = defineTool({
   schema: {
     url: zod.string().url(),
     topN: zod.number().int().positive().optional(),
-    useAI: zod.boolean().optional(),
     runDeobfuscation: zod.boolean().optional(),
     hookPreset: zod.enum(['none', 'api-signature', 'network-core']).optional(),
     autoInjectHooks: zod.boolean().optional(),

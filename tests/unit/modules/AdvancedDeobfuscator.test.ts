@@ -12,10 +12,6 @@ import type {
   AdvancedDeobfuscateResult,
 } from '../../../src/modules/deobfuscator/AdvancedDeobfuscator.js';
 
-interface LLMServiceLike {
-  chat(messages: unknown[]): Promise<{ content: string } | string>;
-}
-
 interface VmDetectionLike {
   detected: boolean;
   type: string;
@@ -46,15 +42,12 @@ interface AdvancedDeobfuscatorTestHarness {
   removeDeadCode(code: string): string;
   removeOpaquePredicates(code: string): string;
   unflattenControlFlow(code: string): Promise<string>;
-  extractCodeFromLLMResponse(response: string): string;
-  isValidJavaScript(code: string): boolean;
   applyASTOptimizations(code: string): string;
   calculateConfidence(
     techniques: string[],
     warnings: string[],
     code: string,
   ): number;
-  llmCleanup(code: string, techniques: string[]): Promise<string | null>;
   deobfuscate(options: AdvancedDeobfuscateOptions): Promise<AdvancedDeobfuscateResult>;
   deobfuscateVM(
     code: string,
@@ -68,7 +61,7 @@ interface AdvancedDeobfuscatorTestHarness {
 describe('AdvancedDeobfuscator', () => {
   it('covers invisible unicode/string detection and decode helpers', () => {
     const d = new AdvancedDeobfuscator() as unknown as AdvancedDeobfuscatorTestHarness;
-    const zw = '\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200c'; // 01000001 => 'A'
+    const zw = '​‌​​​​​‌'; // 01000001 => 'A'
 
     assert.strictEqual(d.detectInvisibleUnicode(`x${zw}y`), true);
     assert.strictEqual(d.detectInvisibleUnicode('normal text'), false);
@@ -116,17 +109,13 @@ describe('AdvancedDeobfuscator', () => {
     assert.ok(opaqueOut.includes('a()'));
     assert.ok(!opaqueOut.includes('if (1 === 2)'));
 
+    // 控制流还原已不再内置 LLM；规则版直接原样返回
     const unflattened = await d.unflattenControlFlow('const x=1;');
     assert.strictEqual(unflattened, 'const x=1;');
   });
 
-  it('covers code extraction/validation/ast optimization/confidence', () => {
+  it('covers ast optimization and confidence helpers', () => {
     const d = new AdvancedDeobfuscator() as unknown as AdvancedDeobfuscatorTestHarness;
-    const extracted = d.extractCodeFromLLMResponse('```javascript\nconst x = 1;\n```');
-    assert.strictEqual(extracted, 'const x = 1;');
-
-    assert.strictEqual(d.isValidJavaScript('const a = 1;'), true);
-    assert.strictEqual(d.isValidJavaScript('const a = ;'), false);
 
     const optimized = d.applyASTOptimizations('const a=(1+2); const b=true&&x; false||y;');
     assert.ok(optimized.includes('3'));
@@ -138,16 +127,8 @@ describe('AdvancedDeobfuscator', () => {
     assert.ok(c2 >= 0.1 && c2 <= 0.95);
   });
 
-  it('covers llm cleanup path and full deobfuscate path', async () => {
-    const llm = {
-      chat: async () => ({ content: '```javascript\nconst cleaned = 1;\n```' }),
-    } satisfies LLMServiceLike;
-    const d = new AdvancedDeobfuscator(
-      llm as unknown as ConstructorParameters<typeof AdvancedDeobfuscator>[0],
-    ) as unknown as AdvancedDeobfuscatorTestHarness;
-
-    const cleaned = await d.llmCleanup('const a=1;', ['string-encoding']);
-    assert.strictEqual(cleaned, 'const cleaned = 1;');
+  it('covers full deobfuscate pipeline and VM rule-based fallback', async () => {
+    const d = new AdvancedDeobfuscator() as unknown as AdvancedDeobfuscatorTestHarness;
 
     const result = await d.deobfuscate({
       code: '\\x61\\u0062;if(false){x()}',
@@ -157,44 +138,14 @@ describe('AdvancedDeobfuscator', () => {
     assert.strictEqual(typeof result.code, 'string');
     assert.ok(Array.isArray(result.detectedTechniques));
     assert.ok(result.confidence > 0);
+
+    // VM 反混淆现在走规则式 simplifyVMCode，不再有 LLM 成功/失败分支
+    const vmRes = await d.deobfuscateVM('var x=1;', { type: 'custom-vm', instructionCount: 0 });
+    assert.strictEqual(typeof vmRes.code, 'string');
   });
 
-  it('covers deobfuscateVM success/fallback branches', async () => {
-    const llmOk = {
-      chat: async () => ({ content: '```javascript\nconst vmOut = 1;\n```' }),
-    } satisfies LLMServiceLike;
-    const d1 = new AdvancedDeobfuscator(
-      llmOk as unknown as ConstructorParameters<typeof AdvancedDeobfuscator>[0],
-    ) as unknown as AdvancedDeobfuscatorTestHarness;
-    const vmOk = await d1.deobfuscateVM('while(true){switch(x){case 0x1:break;}}', {
-      type: 'custom-vm',
-      instructionCount: 1,
-    });
-    assert.strictEqual(vmOk.success, true);
-    assert.ok(vmOk.code.includes('vmOut'));
-
-    const llmBad = {
-      chat: async () => ({ content: 'not js {{' }),
-    } satisfies LLMServiceLike;
-    const d2 = new AdvancedDeobfuscator(
-      llmBad as unknown as ConstructorParameters<typeof AdvancedDeobfuscator>[0],
-    ) as unknown as AdvancedDeobfuscatorTestHarness;
-    const vmBad = await d2.deobfuscateVM('var x=1;', { type: 'custom-vm', instructionCount: 0 });
-    assert.strictEqual(typeof vmBad.code, 'string');
-  });
-
-  it('covers control-flow llm branch, derotate and normalization helpers', async () => {
-    const llm = {
-      chat: async () => ({ content: '```js\nconst cleanFlow = 1;\n```' }),
-    } satisfies LLMServiceLike;
-    const d = new AdvancedDeobfuscator(
-      llm as unknown as ConstructorParameters<typeof AdvancedDeobfuscator>[0],
-    ) as unknown as AdvancedDeobfuscatorTestHarness;
-
-    const unflattened = await d.unflattenControlFlow(
-      'while(true){switch(i){case 0:i=1;break;case 1:break;}}',
-    );
-    assert.ok(unflattened.includes('cleanFlow') || unflattened.includes('while'));
+  it('covers derotate and normalization helpers', () => {
+    const d = new AdvancedDeobfuscator() as unknown as AdvancedDeobfuscatorTestHarness;
 
     const rotated = `
       (function(_0xabc,_0xdef){

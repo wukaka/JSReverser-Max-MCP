@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {zod} from '../third_party/index.js';
 import {
   extractSnippet,
   scoreFrame,
   type TraceFrame,
 } from '../modules/network/RequestTrace.js';
 import {recordTaskEvidence} from '../modules/task/TaskContext.js';
+import {zod} from '../third_party/index.js';
 
 import {ToolCategory} from './categories.js';
 import {defineTool} from './ToolDefinition.js';

@@ -56,7 +56,7 @@
 
 - `loc_find_in_script`
 - `ins_breakpoint(action=set_text)`
-- `loc_analyze_code`
+- `loc_analyze_code(action=deobfuscate)`（只做确定性 AST 变换；解不了的 VMP/JSFuck 由你读原始代码手动还原）
 
 常用关键词：`sign`、`token`、`nonce`、`encrypt`、`hmac`。
 
@@ -112,9 +112,9 @@
 
 ## 6) 评估风险和加密实现
 
-- `loc_analyze_code`
+- `loc_analyze_code(action=crypto)` / `loc_analyze_code(action=risk)`
 
-用于识别弱算法、可疑签名实现、安全风险点。
+用于识别弱算法、可疑签名实现、安全风险点（规则式确定性检测）。
 
 ## 7) 页面交互自动化（配合采样）
 
@@ -157,7 +157,7 @@
 11. 运行 `env/entry.js` 并读取代理 env log
 12. 记录 `first divergence`
 13. `ver_diff_env_requirements`（仅辅助）
-14. `loc_analyze_code`
+14. 对采集到的代码做理解/归纳（由你直接读代码完成，不再走工具）
 15. `env-pass` 后再推进纯算法提纯
 
 ## 11) 参数总表

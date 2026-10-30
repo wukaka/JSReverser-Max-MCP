@@ -28,18 +28,18 @@ import * as jshookDomTools from './tools/dom.js';
 import * as frameTools from './tools/frames.js';
 import * as guideTools from './tools/guide.js';
 import * as jshookHookTools from './tools/hook.js';
-import * as networkTools from './tools/network.js';
 import * as networkAdvancedTools from './tools/network-advanced.js';
+import * as networkTools from './tools/network.js';
 import * as jshookPageTools from './tools/page.js';
 import * as pagesTools from './tools/pages.js';
 import * as jshookRebuildTools from './tools/rebuild.js';
 import {getJSHookRuntime} from './tools/runtime.js';
 import * as screenshotTools from './tools/screenshot.js';
-import * as signerTools from './tools/signer.js';
-import * as signerTraceTools from './tools/signer-trace.js';
-import * as taskTools from './tools/task.js';
 import * as scriptTools from './tools/script.js';
+import * as signerTraceTools from './tools/signer-trace.js';
+import * as signerTools from './tools/signer.js';
 import * as jshookStealthTools from './tools/stealth.js';
+import * as taskTools from './tools/task.js';
 import type {ToolDefinition} from './tools/ToolDefinition.js';
 import {ToolRegistry} from './tools/ToolRegistry.js';
 import * as wasmTools from './tools/wasm.js';
@@ -50,7 +50,7 @@ import {ToolExecutionScheduler} from './utils/ToolExecutionScheduler.js';
 
 // If moved update release-please config
 // x-release-please-start-version
-const VERSION = '2.0.3';
+const VERSION = '3.1.0';
 // x-release-please-end
 
 export const args = parseArguments(VERSION);

@@ -18,7 +18,6 @@
  */
 
 import { logger } from '../../utils/logger.js';
-import type { LLMService } from '../../services/LLMService.js';
 
 import * as parser from '@babel/parser';
 import traverseImport from '@babel/traverse';
@@ -49,11 +48,7 @@ export interface AdvancedDeobfuscateResult {
 }
 
 export class AdvancedDeobfuscator {
-  private llm?: LLMService;
-
-  constructor(llm?: LLMService) {
-    this.llm = llm;
-  }
+  constructor() {}
 
   /**
    * 高级反混淆入口
@@ -147,14 +142,8 @@ export class AdvancedDeobfuscator {
         }
       }
 
-      // 9. 使用LLM进行最终清理
-      if (this.llm && detectedTechniques.length > 0) {
-        logger.info('Using LLM for final cleanup...');
-        const llmResult = await this.llmCleanup(code, detectedTechniques);
-        if (llmResult) {
-          code = llmResult;
-        }
-      }
+      // 9. 最终清理：LLM 语义清理已移除，留规则式 AST 优化结果。
+      //    复杂 VM / 控制流的语义还原由主模型在工具输出基础上完成。
 
       const duration = Date.now() - startTime;
       const confidence = this.calculateConfidence(detectedTechniques, warnings, code);
@@ -311,63 +300,7 @@ export class AdvancedDeobfuscator {
       // 第二步: 提取关键VM组件
       const vmComponents = this.extractVMComponents(code);
 
-      // 第三步: 使用LLM辅助理解VM逻辑 (优化后的提示词)
-      if (this.llm) {
-        const prompt = this.buildVMDeobfuscationPrompt(code, vmInfo, vmStructure, vmComponents);
-
-        const response = await this.llm.chat([
-          {
-            role: 'system',
-            content: `# Role
-You are a world-class expert in JavaScript VM deobfuscation and reverse engineering with expertise in:
-- Virtual machine architecture and instruction set design
-- Bytecode interpretation and JIT compilation
-- Control flow reconstruction from VM instructions
-- Stack-based and register-based VM analysis
-- Obfuscation techniques used by TikTok, Shopee, and commercial protectors
-
-# Task
-Analyze VM-protected JavaScript code and reconstruct the original, readable JavaScript.
-
-# Methodology
-1. **Identify VM Components**: Locate instruction array, interpreter loop, stack/registers
-2. **Decode Instructions**: Map VM opcodes to JavaScript operations
-3. **Reconstruct Control Flow**: Convert VM jumps/branches to if/while/for
-4. **Simplify**: Remove VM overhead and restore natural code structure
-5. **Validate**: Ensure output is syntactically valid and functionally equivalent
-
-# Critical Requirements
-- Output ONLY valid, executable JavaScript (no markdown, no explanations)
-- Preserve exact program logic and side effects
-- Use meaningful variable names based on context
-- Add brief comments for complex patterns
-- Do NOT hallucinate or guess functionality
-- If uncertain, preserve original code structure
-
-# Output Format
-Return clean JavaScript code without any wrapper or formatting.`
-          },
-          { role: 'user', content: prompt },
-        ], {
-          temperature: 0.05, // 极低温度以获得最确定性的输出
-          maxTokens: 4000,
-        });
-
-        // 验证LLM输出是否是有效的JavaScript
-        const deobfuscatedCode = this.extractCodeFromLLMResponse(response.content);
-
-        if (this.isValidJavaScript(deobfuscatedCode)) {
-          logger.success('VM deobfuscation succeeded via LLM');
-          return {
-            success: true,
-            code: deobfuscatedCode,
-          };
-        } else {
-          logger.warn('LLM output is not valid JavaScript, falling back to original');
-        }
-      }
-
-      // 第四步: 如果LLM失败,尝试基于规则的简化
+      // 第三步: 基于规则的简化（LLM 语义还原已移除，由主模型接手）
       const simplifiedCode = this.simplifyVMCode(code, vmComponents);
 
       return {
@@ -482,131 +415,6 @@ Return clean JavaScript code without any wrapper or formatting.`
   }
 
   /**
-   * 构建VM反混淆提示词
-   */
-  private buildVMDeobfuscationPrompt(
-    code: string,
-    vmInfo: { type: string; instructionCount: number },
-    vmStructure: any,
-    vmComponents: any
-  ): string {
-    const codeSnippet = code.length > 6000 ? code.substring(0, 6000) + '\n\n// ... (code truncated)' : code;
-
-    return `# VM Deobfuscation Analysis
-
-## VM Profile
-- **Architecture**: ${vmInfo.type}
-- **Instruction Count**: ${vmInfo.instructionCount}
-- **Interpreter Loop**: ${vmStructure.hasInterpreter ? 'Detected' : 'Not detected'}
-- **Stack Operations**: ${vmStructure.hasStack ? 'Present' : 'Absent'}
-- **Register Usage**: ${vmStructure.hasRegisters ? 'Present' : 'Absent'}
-- **Instruction Variety**: ${vmStructure.instructionTypes.length} distinct types
-
-## Identified Components
-${vmComponents.instructionArray ? `✓ Instruction Array: Found at ${vmComponents.instructionArray}` : '✗ Instruction Array: Not found'}
-${vmComponents.dataArray ? `✓ Data Array: Found at ${vmComponents.dataArray}` : '✗ Data Array: Not found'}
-${vmComponents.interpreterFunction ? `✓ Interpreter Function: Found at ${vmComponents.interpreterFunction}` : '✗ Interpreter Function: Not found'}
-
-## VM-Protected Code
-\`\`\`javascript
-${codeSnippet}
-\`\`\`
-
-## Deobfuscation Instructions (Chain-of-Thought)
-
-### Step 1: VM Structure Analysis
-Examine the code to identify:
-- Instruction array (usually a large array of numbers/strings)
-- Interpreter loop (while/for loop processing instructions)
-- Stack/register variables
-- Opcode handlers (switch-case or if-else chains)
-
-### Step 2: Instruction Decoding
-For each instruction type, determine:
-- What JavaScript operation it represents (e.g., opcode 0x01 = addition)
-- How it manipulates the stack/registers
-- What side effects it has (function calls, property access, etc.)
-
-### Step 3: Control Flow Reconstruction
-- Map VM jumps/branches to JavaScript if/while/for statements
-- Identify function calls and returns
-- Reconstruct try-catch blocks if present
-
-### Step 4: Code Generation
-- Replace VM instruction sequences with equivalent JavaScript
-- Use meaningful variable names based on usage context
-- Remove VM overhead (interpreter loop, stack management)
-- Preserve all side effects and program behavior
-
-### Step 5: Validation
-- Ensure output is syntactically valid JavaScript
-- Verify no functionality is lost
-- Add comments for complex patterns
-
-## Example Transformation (Few-shot Learning)
-
-**VM Code (Before)**:
-\`\`\`javascript
-var vm = [0x01, 0x05, 0x02, 0x03, 0x10];
-var stack = [];
-for(var i=0; i<vm.length; i++) {
-  switch(vm[i]) {
-    case 0x01: stack.push(5); break;
-    case 0x02: stack.push(3); break;
-    case 0x10: var b=stack.pop(), a=stack.pop(); stack.push(a+b); break;
-  }
-}
-console.log(stack[0]);
-\`\`\`
-
-**Deobfuscated Code (After)**:
-\`\`\`javascript
-// VM instructions decoded: PUSH 5, PUSH 3, ADD
-var result = 5 + 3;
-console.log(result);
-\`\`\`
-
-## Critical Requirements
-1. Output ONLY the deobfuscated JavaScript code
-2. NO markdown code blocks, NO explanations, NO comments outside the code
-3. Code must be syntactically valid and executable
-4. Preserve exact program logic and side effects
-5. If full deobfuscation is impossible, return the best partial result
-
-## Output Format
-Return clean JavaScript code starting immediately (no preamble).`;
-  }
-
-  /**
-   * 从LLM响应中提取代码
-   */
-  private extractCodeFromLLMResponse(response: string): string {
-    // 移除markdown代码块标记
-    let code = response.trim();
-
-    // 移除 ```javascript 或 ```js 标记
-    code = code.replace(/^```(?:javascript|js)?\s*\n/i, '');
-    code = code.replace(/\n```\s*$/i, '');
-
-    return code.trim();
-  }
-
-  /**
-   * 验证是否是有效的JavaScript
-   */
-  private isValidJavaScript(code: string): boolean {
-    try {
-      parser.parse(code, {
-        sourceType: 'module',
-        plugins: ['jsx', 'typescript'],
-      });
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
    * 简化VM代码 (基于规则)
    */
   private simplifyVMCode(code: string, vmComponents: any): string {
@@ -642,85 +450,13 @@ Return clean JavaScript code starting immediately (no preamble).`;
   }
 
   /**
-   * 还原控制流 - 优化版
+   * 还原控制流 - 占位
    *
-   * 控制流平坦化(Control Flow Flattening)是常见的混淆技术
-   * 使用优化的提示词进行LLM辅助反混淆
+   * 控制流平坦化的语义还原此前由内置 LLM 完成，现已移除。
+   * 该工具不再做规则式控制流还原；主模型可在工具输出的代码上自行完成。
    */
   private async unflattenControlFlow(code: string): Promise<string> {
-    logger.info('Unflattening control flow...');
-
-    // 使用LLM辅助 (优化后的提示词)
-    if (this.llm) {
-      try {
-        const codeSnippet = code.length > 3000 ? code.substring(0, 3000) + '\n\n// ... (truncated)' : code;
-
-        const response = await this.llm.chat([
-          {
-            role: 'system',
-            content: `# Role
-You are an expert in JavaScript control flow deobfuscation specializing in:
-- Control flow flattening detection and removal
-- Switch-case state machine analysis
-- Dispatcher loop identification
-- Control flow graph (CFG) reconstruction
-
-# Task
-Analyze control flow flattened JavaScript and reconstruct the original, natural control flow.
-
-# Control Flow Flattening Pattern
-Obfuscators replace normal if/while/for with a dispatcher loop:
-\`\`\`javascript
-// Flattened (obfuscated)
-var state = '0';
-while (true) {
-  switch (state) {
-    case '0': console.log('a'); state = '1'; break;
-    case '1': console.log('b'); state = '2'; break;
-    case '2': return;
-  }
-}
-
-// Original (deobfuscated)
-console.log('a');
-console.log('b');
-return;
-\`\`\`
-
-# Requirements
-- Output ONLY valid JavaScript code
-- Preserve exact program logic
-- Remove dispatcher loops and state variables
-- Restore natural if/while/for structures
-- Use meaningful variable names`
-          },
-          {
-            role: 'user',
-            content: `# Control Flow Flattened Code
-\`\`\`javascript
-${codeSnippet}
-\`\`\`
-
-# Instructions
-1. Identify the dispatcher loop (while/for with switch-case)
-2. Trace state transitions to determine execution order
-3. Reconstruct original control flow (if/while/for)
-4. Remove state variables and dispatcher overhead
-5. Return ONLY the deobfuscated code (no explanations)
-
-Output the deobfuscated JavaScript code:`
-          },
-        ], {
-          temperature: 0.1,
-          maxTokens: 3000,
-        });
-
-        return this.extractCodeFromLLMResponse(response.content);
-      } catch (error) {
-        logger.warn('LLM control flow unflattening failed', error);
-      }
-    }
-
+    logger.info('Control flow unflattening deferred to main model (no rule-based implementation)');
     return code;
   }
 
@@ -1008,127 +744,6 @@ Output the deobfuscated JavaScript code:`
     }
   }
 
-  /**
-   * LLM代码清理
-   *
-   * 在完成基于规则的反混淆后,使用LLM进行最后的清理和优化:
-   * 1. 改善变量命名
-   * 2. 简化复杂表达式
-   * 3. 添加有意义的注释
-   * 4. 重构冗余代码
-   */
-  private async llmCleanup(code: string, techniques: string[]): Promise<string | null> {
-    if (!this.llm) return null;
-
-    try {
-      const codeSnippet = code.length > 3000 ? code.substring(0, 3000) + '\n\n// ... (code truncated)' : code;
-
-      const prompt = `# Code Cleanup Task
-
-## Detected Obfuscation Techniques
-${techniques.map(t => `- ${t}`).join('\n')}
-
-## Deobfuscated Code (needs cleanup)
-\`\`\`javascript
-${codeSnippet}
-\`\`\`
-
-## Your Task
-Clean up and improve this deobfuscated JavaScript code:
-
-1. **Variable Naming**: Rename variables to meaningful names based on their usage
-   - Avoid generic names like 'a', 'b', 'temp'
-   - Use descriptive names like 'userConfig', 'apiEndpoint', 'responseData'
-
-2. **Code Structure**: Improve readability
-   - Remove unnecessary parentheses and brackets
-   - Simplify complex expressions
-   - Extract magic numbers to named constants
-
-3. **Comments**: Add brief comments for:
-   - Complex logic or algorithms
-   - Non-obvious functionality
-   - Important data structures
-
-4. **Consistency**: Ensure consistent code style
-   - Use consistent indentation
-   - Follow JavaScript best practices
-
-## Important Rules
-- Preserve ALL original functionality
-- Do NOT remove any functional code
-- Do NOT change the program logic
-- Output ONLY valid JavaScript code
-- Do NOT add explanations outside the code
-
-## Output Format
-Return only the cleaned JavaScript code without markdown formatting.`;
-
-      const response = await this.llm.chat([
-        {
-          role: 'system',
-          content: `# Role
-You are an expert JavaScript code reviewer and refactoring specialist with expertise in:
-- Code readability and maintainability improvement
-- Semantic variable naming based on usage context
-- Code smell detection and refactoring
-- JavaScript best practices (ES6+, clean code principles)
-- Preserving exact program functionality during refactoring
-
-# Task
-Clean up and improve deobfuscated JavaScript code while preserving 100% of its functionality.
-
-# Refactoring Principles
-1. **Semantic Naming**: Infer variable purpose from usage patterns
-   - API calls → apiClient, fetchData, apiResponse
-   - DOM elements → userInput, submitButton, errorMessage
-   - Crypto operations → encryptedData, decryptionKey, hashValue
-   - Loops/counters → index, itemCount, currentPage
-
-2. **Code Simplification**: Remove obfuscation artifacts
-   - Unnecessary IIFEs and closures
-   - Redundant variable assignments
-   - Complex ternary chains → if-else
-   - Magic numbers → named constants
-
-3. **Structure Improvement**: Enhance readability
-   - Extract repeated code to functions
-   - Group related operations
-   - Consistent indentation and spacing
-   - Logical code organization
-
-# Critical Constraints
-- **NEVER** change program logic or behavior
-- **NEVER** remove functional code (even if it looks redundant)
-- **NEVER** add new functionality
-- **ONLY** improve naming, structure, and readability
-- Output must be syntactically valid JavaScript
-- Preserve all side effects and edge cases
-
-# Output Format
-Return ONLY the cleaned JavaScript code (no markdown, no explanations).`
-        },
-        { role: 'user', content: prompt },
-      ], {
-        temperature: 0.15, // 低温度以保持一致性和确定性
-        maxTokens: 3000,
-      });
-
-      const cleanedCode = this.extractCodeFromLLMResponse(response.content);
-
-      // 验证清理后的代码是否有效
-      if (this.isValidJavaScript(cleanedCode)) {
-        logger.success('LLM cleanup succeeded');
-        return cleanedCode;
-      } else {
-        logger.warn('LLM cleanup produced invalid JavaScript');
-        return null;
-      }
-    } catch (error) {
-      logger.warn('LLM cleanup failed', error);
-      return null;
-    }
-  }
 
   /**
    * 标准化代码格式

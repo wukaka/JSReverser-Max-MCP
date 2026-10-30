@@ -41,7 +41,7 @@ build/src/index.js
 
 ### 2) 先启动可接管的 Chrome
 
-本项目不再自动拉起浏览器：未指定连接目标时服务会直接报错退出，避免旧兜底在父进程被强制终止后留下孤儿 Chrome 进程。
+本项目不再自动拉起浏览器：未指定连接目标时服务会直接报错退出。
 
 先启动一个带远程调试端口的 Chrome：
 
@@ -64,10 +64,7 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 
 ### 3) 配置客户端
 
-最小配置示例（以 `--browserUrl` 接管本机 Chrome）：
-
-
-适用于支持 `mcpServers` JSON 配置的客户端配置：
+最小配置示例（以 `--browserUrl` 接管本机 Chrome）。本服务不内置外部 LLM，浏览器接管、Hook / 断点 / Network / WebSocket、代码采集与去混淆等能力开箱即用；代码的语义理解与归纳由主模型直接完成：
 
 ```json
 {
@@ -78,18 +75,19 @@ npm run start -- --browserUrl http://127.0.0.1:9222
         "/ABSOLUTE/PATH/JSReverser-Max-MCP/build/src/index.js",
         "--browserUrl",
         "http://127.0.0.1:9222"
-      ],
-      "env": {
-        "DEFAULT_LLM_PROVIDER": "gemini",
-        "GEMINI_API_KEY": "your_key",
-        "GEMINI_MODEL": "gemini-2.0-flash-exp"
-      }
+      ]
     }
   }
 }
 ```
 
-更多AI工具配置示例，以及 `--wsEndpoint`、`--autoConnect`、端口转发和 `env` 写法，见：
+最后把仓库内置的三个 skill 装进客户端（以 Claude Code 为例，符号链接到用户级 skills 目录即可被自动发现，且随仓库更新生效）：
+
+```bash
+mkdir -p ~/.claude/skills && ln -s /ABSOLUTE/PATH/JSReverser-Max-MCP/skills/* ~/.claude/skills/
+```
+
+更多客户端（Claude Code / Cursor / Codex）配置示例、`--wsEndpoint`、`--autoConnect` 与端口转发写法，见：
 
 - [docs/guides/client-configuration.md](docs/guides/client-configuration.md)
 - [docs/guides/browser-connection.md](docs/guides/browser-connection.md)
@@ -153,10 +151,10 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 |  |  | `obs_take_screenshot` | `format` (png/jpeg/webp), `quality`, `fullPage`, `filePath` |
 | 注入与隐身 | 预注入脚本、stealth 特性与 UA 伪装 | `ins_inject_preload_script` | `script*` |
 |  |  | `ins_stealth` | `action*` (inject/presets/features/set_user_agent), `preset` (windows-chrome/mac-chrome/mac-safari/linux-chrome/windows-edge), `userAgent` |
-| 深度分析 | 拿到代码和运行时证据后，做结构理解、去混淆和一键分析 | `run_analyze_target` | `url*`, `topN`, `useAI`, `runDeobfuscation`, `hookPreset` (none/api-signature/network-core), `autoInjectHooks`, `waitAfterHookMs`, `correlationWindowMs`, `maxCorrelatedFlows`, `maxFingerprints`, `autoReplayActions[]`, `collect` |
+| 深度分析 | 拿到代码和运行时证据后，做结构理解、去混淆和一键分析 | `run_analyze_target` | `url*`, `topN`, `runDeobfuscation`, `hookPreset` (none/api-signature/network-core), `autoInjectHooks`, `waitAfterHookMs`, `correlationWindowMs`, `maxCorrelatedFlows`, `maxFingerprints`, `autoReplayActions[]`, `collect` |
 |  |  | `obs_collect_code` | `url*`, `smartMode` (summary/priority/incremental/full), `returnMode` (full/summary/pattern/top-priority), `includeInline`, `includeExternal`, `includeDynamic`, `maxTotalSize`, `maxFileSize`, `pattern`, `limit`, `topN` |
 |  |  | `ver_collection_diff` | `previous*[]`, `current[]`, `includeUnchanged` |
-|  |  | `loc_analyze_code` | `action*` (deobfuscate/understand/summarize/crypto/risk), `code`, `url`, `files[]`, `focus` (all/structure/business/security), `aggressive`, `renameVariables`, `useAI`, `mode` (single/batch/project), `includeHookSignals`, `hookId`, `topN` |
+|  |  | `loc_analyze_code` | `action*` (deobfuscate/understand/summarize/crypto/risk), `code`, `url`, `files[]`, `focus` (all/structure/business/security), `aggressive`, `renameVariables`, `mode` (single/batch/project), `includeHookSignals`, `hookId`, `topN` |
 | 会话与登录态复用 | 保存并复用浏览器会话与登录态 | `rec_session_state` | `action*` (save/restore/list/delete/dump/load), `sessionId`, `includeCookies`, `includeLocalStorage`, `includeSessionStorage`, `navigateToSavedUrl`, `clearStorageBeforeRestore`, `path`, `pretty`, `encrypt`, `snapshotJson`, `overwrite` |
 |  |  | `rec_export_session_report` | `format` (json/markdown), `includeHookData` |
 | Wasm 与 JSON 插件 | 覆盖采集、结构分析、导出使用情况、JS→Wasm 边界链路和 WAT 反汇编；Hook 体系内置 `json` 插件 | `wasm_collect` | `url*`, `timeout`, `waitAfterLoadMs`, `includeRuntimeEvents`, `includeImports`, `includeExports`, `maxModules`, `captureBase64`, `taskId`, `taskSlug`, `targetUrl`, `goal` |
@@ -171,7 +169,7 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 
 <!-- END CAPABILITY TABLE -->
 
-> 注：强依赖外部 AI 的只有 `loc_analyze_code` 的部分 action；`run_analyze_target` 属于可选编排增强。外部 LLM 当前支持 `openai` / `anthropic` / `gemini`，配置通过进程环境变量完成，MCP 客户端里在 server 配置的 `env` 中传入（如 `DEFAULT_LLM_PROVIDER` + 对应 `*_API_KEY`）。不配置也能使用浏览器接管、Hook / 断点 / Network / WebSocket、`obs_collect_code`、`rec_export_rebuild_bundle` 等核心能力。完整 provider 列表、`.env` 写法与逐功能依赖说明见 [docs/guides/ai-configuration.md](docs/guides/ai-configuration.md)。
+> 注：本服务不内置外部 LLM。`loc_analyze_code` 只返回确定性骨架（AST 结构、数据流、模式、复杂度、加密/弱算法规则检测、代码片段）；`understand` / `summarize` 的语义归纳、`deobfuscate` 解不了的 VMP/JSFuck 还原，均由主模型在工具输出基础上自行完成。
 >
 - 完整参数说明见 [docs/reference/tool-reference.md](docs/reference/tool-reference.md)。
 - 按逆向流程选工具可继续看 [docs/reference/reverse-workflow.md](docs/reference/reverse-workflow.md)。
@@ -186,7 +184,6 @@ npm run start -- --browserUrl http://127.0.0.1:9222
 - 快速开始：[docs/guides/getting-started.md](docs/guides/getting-started.md)
 - 浏览器连接：[docs/guides/browser-connection.md](docs/guides/browser-connection.md)
 - 客户端配置：[docs/guides/client-configuration.md](docs/guides/client-configuration.md)
-- 外部 AI 配置：[docs/guides/ai-configuration.md](docs/guides/ai-configuration.md)
 - 逆向工作流：[docs/reference/reverse-workflow.md](docs/reference/reverse-workflow.md)
 - 补环境规范：[docs/reference/env-patching.md](docs/reference/env-patching.md)
 

@@ -6,7 +6,6 @@
 import assert from 'node:assert';
 import {describe, it} from 'node:test';
 
-import type {HTTPRequest} from '../../../src/third_party/index.js';
 import {
   buildReplaySpec,
   classifyReplay,
@@ -15,6 +14,7 @@ import {
   toNodeFetch,
 } from '../../../src/modules/network/RequestReplay.js';
 import {assertAllowedUrl} from '../../../src/modules/safety/RequestScope.js';
+import type {HTTPRequest} from '../../../src/third_party/index.js';
 
 function fakeRequest(options: {
   url?: string;

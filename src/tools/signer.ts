@@ -7,10 +7,10 @@
 import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 
+import {recordTaskEvidence} from '../modules/task/TaskContext.js';
 import type {Page} from '../third_party/index.js';
 import {zod} from '../third_party/index.js';
 import {resolveDefaultArtifactsTasksDir} from '../utils/projectPaths.js';
-import {recordTaskEvidence} from '../modules/task/TaskContext.js';
 
 import {ToolCategory} from './categories.js';
 import {getJSHookRuntime} from './runtime.js';
@@ -77,7 +77,7 @@ async function executeSigner(
 ): Promise<unknown> {
   return page.evaluate(
     async (input: {expr: string; payload: unknown}) => {
-      // eslint-disable-next-line no-eval
+       
       const fn = (0, eval)(input.expr) as unknown;
       if (typeof fn !== 'function') {
         throw new Error('Signer expression did not evaluate to a function.');

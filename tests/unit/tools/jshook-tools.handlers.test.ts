@@ -12,8 +12,8 @@ import { describe, it } from 'node:test';
 import { StealthScripts2025 } from '../../../src/modules/stealth/StealthScripts2025.js';
 import { analyzeCode, analyzeTarget, exportSessionReport } from '../../../src/tools/analyzer.js';
 import { collectCode, collectionDiff, listCollectedScripts } from '../../../src/tools/collector.js';
-import { getDomStructure, queryDom } from '../../../src/tools/dom.js';
 import { hook } from '../../../src/tools/debugger.js';
+import { getDomStructure, queryDom } from '../../../src/tools/dom.js';
 import { getHookData } from '../../../src/tools/hook.js';
 import {
   checkBrowserHealth,

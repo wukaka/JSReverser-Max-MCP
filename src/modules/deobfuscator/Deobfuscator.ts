@@ -31,7 +31,6 @@ import * as t from '@babel/types';
 
 import crypto from 'node:crypto';
 
-import type { LLMService } from '../../services/LLMService.js';
 import type { DeobfuscateOptions, DeobfuscateResult, ObfuscationType, Transformation, UnresolvedPart } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
 
@@ -63,8 +62,6 @@ export interface DeobfuscateFullOptions extends DeobfuscateOptions {
 // ==================== 主类 ====================
 
 export class Deobfuscator {
-  private llm?: LLMService;
-
   // 子模块实例
   private advancedDeobfuscator: AdvancedDeobfuscator;
   private jsvmpDeobfuscator: JSVMPDeobfuscator;
@@ -76,10 +73,9 @@ export class Deobfuscator {
   private resultCache = new Map<string, DeobfuscateResult>();
   private maxCacheSize = 100;
 
-  constructor(llm?: LLMService) {
-    this.llm = llm;
-    this.advancedDeobfuscator = new AdvancedDeobfuscator(llm);
-    this.jsvmpDeobfuscator = new JSVMPDeobfuscator(llm);
+  constructor() {
+    this.advancedDeobfuscator = new AdvancedDeobfuscator();
+    this.jsvmpDeobfuscator = new JSVMPDeobfuscator();
     this.astOptimizer = new ASTOptimizer();
     this.universalUnpacker = new UniversalUnpacker();
   }
@@ -159,15 +155,8 @@ export class Deobfuscator {
         code = await this.renameVariables(code, transformations);
       }
 
-      // ── Step 7: LLM 辅助分析 ──
-      let analysis = 'Deobfuscation pipeline completed.';
-      if (this.llm && options.llm) {
-        const llmResult = await this.llmAnalysis(code);
-        if (llmResult) {
-          analysis = llmResult;
-          transformations.push({ type: 'llm-analysis', description: 'AI-assisted code analysis completed', success: true });
-        }
-      }
+      // ── Step 7: 语义分析（由主模型在工具外完成）──
+      const analysis = 'Deobfuscation pipeline completed.';
 
       // ── 结果 ──
       const deobfuscateTime = Date.now() - startTime;
@@ -904,18 +893,7 @@ export class Deobfuscator {
   }
 
   // ==================== LLM ====================
-
-  private async llmAnalysis(code: string): Promise<string | null> {
-    if (!this.llm) return null;
-    try {
-      const messages = this.llm.generateDeobfuscationPrompt(code);
-      const response = await this.llm.chat(messages, { temperature: 0.3, maxTokens: 2000 });
-      return response.content;
-    } catch (error) {
-      logger.warn('LLM analysis failed', error);
-      return null;
-    }
-  }
+  // LLM 辅助分析已移除：语义归纳由主模型在工具输出基础上完成。
 
   // ==================== 评分 ====================
 

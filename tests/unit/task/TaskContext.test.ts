@@ -9,13 +9,13 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {describe, it} from 'node:test';
 
-import {ReverseTaskStore} from '../../../src/reverse/ReverseTaskStore.js';
 import {
   clearTaskContext,
   getTaskContext,
   recordTaskEvidence,
   setTaskContext,
 } from '../../../src/modules/task/TaskContext.js';
+import {ReverseTaskStore} from '../../../src/reverse/ReverseTaskStore.js';
 import {getJSHookRuntime} from '../../../src/tools/runtime.js';
 
 describe('TaskContext', () => {

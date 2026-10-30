@@ -21,7 +21,6 @@
  * - 性能优化 (单次AST解析、结果缓存)
  */
 
-import type { LLMService } from '../../services/LLMService.js';
 import type { DetectCryptoOptions, DetectCryptoResult, CryptoAlgorithm, CryptoLibrary } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
 
@@ -37,11 +36,9 @@ import {
 import { CryptoRulesManager } from './CryptoRules.js';
 
 export class CryptoDetector {
-  private llm: LLMService;
   private rulesManager: CryptoRulesManager;
 
-  constructor(llm: LLMService, customRules?: CryptoRulesManager) {
-    this.llm = llm;
+  constructor(customRules?: CryptoRulesManager) {
     this.rulesManager = customRules || new CryptoRulesManager();
   }
 
@@ -93,15 +90,7 @@ export class CryptoDetector {
       }
       logger.debug(`Found ${astResults.algorithms.length} algorithms by AST analysis`);
 
-      // 4. AI深度分析（默认关闭，需显式启用，避免不必要的 LLM 调用）
-      const useAI = (options as any).useAI === true;
-      if (useAI) {
-        const aiResults = await this.detectByAI(code);
-        algorithms.push(...aiResults);
-        logger.debug(`AI detected ${aiResults.length} algorithms`);
-      }
-
-      // 5. 合并和去重
+      // 4. 合并和去重
       const mergedAlgorithms = this.mergeResults(algorithms);
 
       // 6. 安全性评估
@@ -179,45 +168,6 @@ export class CryptoDetector {
 
   // detectByPatterns 和 detectByConstants 已被统一的 detectByAST 替代
   // 参见 CryptoDetectorEnhanced.ts
-
-  /**
-   * 基于AI检测
-   */
-  private async detectByAI(code: string): Promise<CryptoAlgorithm[]> {
-    try {
-      const messages = this.llm.generateCryptoDetectionPrompt(code);
-      const response = await this.llm.chat(messages, { temperature: 0.2, maxTokens: 2000 });
-
-      // 解析JSON响应
-      const jsonMatch = response.content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        return [];
-      }
-
-      const result = JSON.parse(jsonMatch[0]) as { algorithms?: unknown[] };
-      if (!Array.isArray(result.algorithms)) {
-        return [];
-      }
-
-      return result.algorithms.map((algo: unknown) => {
-        const a = algo as Record<string, unknown>;
-        return {
-          name: (a.name as string) || 'Unknown',
-          type: (a.type as CryptoAlgorithm['type']) || 'other',
-          confidence: (a.confidence as number) || 0.5,
-          location: {
-            file: 'current',
-            line: 0,
-          },
-          parameters: a.parameters as CryptoAlgorithm['parameters'],
-          usage: (a.usage as string) || '',
-        };
-      });
-    } catch (error) {
-      logger.warn('AI crypto detection failed', error);
-      return [];
-    }
-  }
 
   /**
    * 检测加密库（使用动态规则）

@@ -13,7 +13,6 @@ import traverseImport from '@babel/traverse';
 const traverse = (traverseImport as unknown as {default?: typeof traverseImport}).default ?? traverseImport;
 import * as t from '@babel/types';
 
-import type { LLMService } from '../../services/LLMService.js';
 import type {
   UnderstandCodeOptions,
   UnderstandCodeResult,
@@ -29,11 +28,7 @@ import type {
 import { logger } from '../../utils/logger.js';
 
 export class CodeAnalyzer {
-  private llm: LLMService;
-
-  constructor(llm: LLMService) {
-    this.llm = llm;
-  }
+  constructor() {}
 
   /**
    * 理解代码
@@ -49,39 +44,34 @@ export class CodeAnalyzer {
       const structure = await this.analyzeStructure(code);
       logger.debug('Code structure analyzed');
 
-      // 2. AI分析 - 深度理解
-      const aiAnalysis = await this.aiAnalyze(code, focus);
-      logger.debug('AI analysis completed');
-
-      // 3. 技术栈识别
-      const techStack = this.detectTechStack(code, aiAnalysis);
+      // 2. 技术栈识别（确定性特征匹配）
+      const techStack = this.detectTechStack(code);
       logger.debug('Tech stack detected');
 
-      // 4. 业务逻辑理解
-      const businessLogic = this.extractBusinessLogic(aiAnalysis, context);
-      logger.debug('Business logic extracted');
+      // 3. 业务逻辑骨架（保留调用方上下文，自由文本归纳由主模型完成）
+      const businessLogic = this.extractBusinessLogic(context);
+      logger.debug('Business logic skeleton extracted');
 
-      // 5. 数据流分析
+      // 4. 数据流分析
       const dataFlow = await this.analyzeDataFlow(code);
       logger.debug('Data flow analyzed');
 
-      // 6. 安全风险识别
-      const securityRisks = this.identifySecurityRisks(code, aiAnalysis);
+      // 5. 安全风险识别（基于规则的静态检测）
+      const securityRisks = this.identifySecurityRisks(code);
       logger.debug('Security risks identified');
 
-      // 7. 代码模式和反模式检测
+      // 6. 代码模式和反模式检测
       const { patterns, antiPatterns } = this.detectCodePatterns(code);
       logger.debug(`Detected ${patterns.length} patterns and ${antiPatterns.length} anti-patterns`);
 
-      // 8. 复杂度指标分析
+      // 7. 复杂度指标分析
       const complexityMetrics = this.analyzeComplexityMetrics(code);
       logger.debug('Complexity metrics calculated');
 
-      // 9. 代码质量评分（整合新指标）
+      // 8. 代码质量评分（整合新指标）
       const qualityScore = this.calculateQualityScore(
         structure,
         securityRisks,
-        aiAnalysis,
         complexityMetrics,
         antiPatterns
       );
@@ -244,43 +234,12 @@ export class CodeAnalyzer {
   }
 
   /**
-   * AI深度分析
+   * 检测技术栈（基于代码特征的确定性匹配）
    */
-  private async aiAnalyze(code: string, focus: string): Promise<Record<string, unknown>> {
-    try {
-      const messages = this.llm.generateCodeAnalysisPrompt(code, focus);
-      const response = await this.llm.chat(messages, { temperature: 0.3, maxTokens: 2000 });
-
-      // 尝试解析JSON响应
-      const jsonMatch = response.content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]) as Record<string, unknown>;
-      }
-
-      return { rawAnalysis: response.content };
-    } catch (error) {
-      logger.warn('AI analysis failed, using fallback', error);
-      return {};
-    }
-  }
-
-  /**
-   * 检测技术栈
-   */
-  private detectTechStack(code: string, aiAnalysis: Record<string, unknown>): TechStack {
+  private detectTechStack(code: string): TechStack {
     const techStack: TechStack = {
       other: [],
     };
-
-    // 从AI分析结果中提取
-    if (aiAnalysis.techStack && typeof aiAnalysis.techStack === 'object') {
-      const ts = aiAnalysis.techStack as Record<string, unknown>;
-      techStack.framework = ts.framework as string | undefined;
-      techStack.bundler = ts.bundler as string | undefined;
-      if (Array.isArray(ts.libraries)) {
-        techStack.other = ts.libraries as string[];
-      }
-    }
 
     // 基于代码特征检测
     if (code.includes('React.') || code.includes('useState') || code.includes('useEffect')) {
@@ -308,25 +267,15 @@ export class CodeAnalyzer {
   }
 
   /**
-   * 提取业务逻辑
+   * 提取业务逻辑骨架（合并调用方上下文；自由文本归纳由主模型完成）
    */
-  private extractBusinessLogic(aiAnalysis: Record<string, unknown>, context?: Record<string, unknown>): BusinessLogic {
+  private extractBusinessLogic(context?: Record<string, unknown>): BusinessLogic {
     const businessLogic: BusinessLogic = {
       mainFeatures: [],
       entities: [],
       rules: [],
       dataModel: {},
     };
-
-    if (aiAnalysis.businessLogic && typeof aiAnalysis.businessLogic === 'object') {
-      const bl = aiAnalysis.businessLogic as Record<string, unknown>;
-      if (Array.isArray(bl.mainFeatures)) {
-        businessLogic.mainFeatures = bl.mainFeatures as string[];
-      }
-      if (typeof bl.dataFlow === 'string') {
-        businessLogic.rules.push(bl.dataFlow);
-      }
-    }
 
     // 合并上下文信息
     if (context) {
@@ -845,80 +794,12 @@ export class CodeAnalyzer {
       logger.warn('Data flow analysis failed', error);
     }
 
-    // 使用LLM辅助进行深度污点分析（如果有污点路径）
-    if (taintPaths.length > 0 && this.llm) {
-      try {
-        await this.enhanceTaintAnalysisWithLLM(code, sources, sinks, taintPaths);
-      } catch (error) {
-        logger.warn('LLM-enhanced taint analysis failed', error);
-      }
-    }
-
     return {
       graph,
       sources,
       sinks,
       taintPaths,
     };
-  }
-
-  /**
-   * 使用LLM增强污点分析
-   *
-   * 对于复杂的数据流，使用LLM进行深度分析
-   * 识别隐式数据流和复杂的污点传播路径
-   */
-  private async enhanceTaintAnalysisWithLLM(
-    code: string,
-    sources: DataFlow['sources'],
-    sinks: DataFlow['sinks'],
-    taintPaths: DataFlow['taintPaths']
-  ): Promise<void> {
-    if (!this.llm || taintPaths.length === 0) return;
-
-    try {
-      const sourcesList = sources.map(s => `${s.type} at line ${s.location.line}`);
-      const sinksList = sinks.map(s => `${s.type} at line ${s.location.line}`);
-
-      const messages = this.llm.generateTaintAnalysisPrompt(
-        code.length > 4000 ? code.substring(0, 4000) : code,
-        sourcesList,
-        sinksList
-      );
-
-      const response = await this.llm.chat(messages, {
-        temperature: 0.2,
-        maxTokens: 2000,
-      });
-
-      // 尝试解析LLM返回的额外污点路径
-      const jsonMatch = response.content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const llmResult = JSON.parse(jsonMatch[0]) as { taintPaths?: any[] };
-
-        if (Array.isArray(llmResult.taintPaths)) {
-          logger.info(`LLM identified ${llmResult.taintPaths.length} additional taint paths`);
-
-          // 将LLM发现的路径添加到结果中（去重）
-          llmResult.taintPaths.forEach((path: any) => {
-            const exists = taintPaths.some(
-              p => p.source.location.line === path.source?.location?.line &&
-                   p.sink.location.line === path.sink?.location?.line
-            );
-
-            if (!exists && path.source && path.sink) {
-              taintPaths.push({
-                source: path.source,
-                sink: path.sink,
-                path: path.path || [],
-              });
-            }
-          });
-        }
-      }
-    } catch (error) {
-      logger.debug('LLM taint analysis enhancement failed', error);
-    }
   }
 
   /**
@@ -955,27 +836,10 @@ export class CodeAnalyzer {
   /**
    * 识别安全风险 - 增强版
    *
-   * 基于OWASP Top 10和CWE标准进行全面的安全风险检测
-   * 结合静态分析和AI分析结果
+   * 基于OWASP Top 10和CWE标准的规则式静态检测
    */
-  private identifySecurityRisks(code: string, aiAnalysis: Record<string, unknown>): SecurityRisk[] {
+  private identifySecurityRisks(code: string): SecurityRisk[] {
     const risks: SecurityRisk[] = [];
-
-    // 从AI分析中提取风险
-    if (Array.isArray(aiAnalysis.securityRisks)) {
-      aiAnalysis.securityRisks.forEach((risk: unknown) => {
-        if (typeof risk === 'object' && risk !== null) {
-          const r = risk as Record<string, unknown>;
-          risks.push({
-            type: (r.type as SecurityRisk['type']) || 'other',
-            severity: (r.severity as SecurityRisk['severity']) || 'low',
-            location: { file: 'current', line: (r.location as any)?.line || 0 },
-            description: (r.description as string) || '',
-            recommendation: (r.recommendation as string) || '',
-          });
-        }
-      });
-    }
 
     // 基于规则的静态检测 - 增强版
     try {
@@ -1161,7 +1025,6 @@ export class CodeAnalyzer {
   private calculateQualityScore(
     structure: CodeStructure,
     securityRisks: SecurityRisk[],
-    aiAnalysis: Record<string, unknown>,
     complexityMetrics?: {
       cyclomaticComplexity: number;
       cognitiveComplexity: number;
@@ -1215,23 +1078,12 @@ export class CodeAnalyzer {
     }
     codeSmellScore = Math.max(0, codeSmellScore);
 
-    // 5. AI评分 (如果可用)
-    let aiScore = 70; // 默认值
-    if (typeof aiAnalysis.qualityScore === 'number') {
-      aiScore = aiAnalysis.qualityScore;
-    }
-
     // 加权平均
     score =
       securityScore * 0.40 +
       complexityScore * 0.25 +
       maintainabilityScore * 0.20 +
       codeSmellScore * 0.15;
-
-    // 与AI评分取平均（如果AI评分可用）
-    if (typeof aiAnalysis.qualityScore === 'number') {
-      score = (score + aiScore) / 2;
-    }
 
     return Math.round(Math.max(0, Math.min(100, score)));
   }

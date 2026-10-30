@@ -34,7 +34,7 @@
    - 复跑并确认 `first divergence` 是否前移
 
 4. 深挖
-   - `loc_analyze_code`
+   - 对采集到的代码做理解/归纳（由你直接读代码完成）；需要确定性去混淆时用 `loc_analyze_code(action=deobfuscate)`
    - 必要时插桩 / VMP 分析
 
 核心要求：

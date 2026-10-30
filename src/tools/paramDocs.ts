@@ -45,7 +45,6 @@ export const TOOL_PARAM_DOCS: Record<string, Record<string, string>> = {
       'Analysis focus for action=understand: all, structure, business, or security.',
     aggressive: 'For deobfuscate: enable aggressive transformations.',
     renameVariables: 'For deobfuscate: rename variables to readable names.',
-    useAI: 'For crypto: enable LLM-based deep analysis.',
     includeHookSignals: 'For risk: include hook record counts in scoring (default true).',
     hookId: 'For risk: restrict hook signals to this hook id.',
     topN: 'For risk: number of collected files to use when code is omitted (default 5).',
@@ -159,7 +158,6 @@ export const TOOL_PARAM_DOCS: Record<string, Record<string, string>> = {
   run_analyze_target: {
     url: 'Target page URL.',
     topN: 'Number of top-priority files used for analysis.',
-    useAI: 'Enable LLM-assisted analysis.',
     runDeobfuscation: 'Run the deobfuscation pipeline on selected files.',
     hookPreset: 'Hook preset: none, api-signature, or network-core.',
     autoInjectHooks: 'Inject the selected hook preset automatically.',

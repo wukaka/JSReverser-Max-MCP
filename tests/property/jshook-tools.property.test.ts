@@ -13,8 +13,8 @@ import fc from 'fast-check';
 import {zod} from '../../src/third_party/index.js';
 import {analyzeCode} from '../../src/tools/analyzer.js';
 import {collectCode} from '../../src/tools/collector.js';
-import {queryDom} from '../../src/tools/dom.js';
 import {hook} from '../../src/tools/debugger.js';
+import {queryDom} from '../../src/tools/dom.js';
 import {clickElement} from '../../src/tools/page.js';
 import {stealth} from '../../src/tools/stealth.js';
 

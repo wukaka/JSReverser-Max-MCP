@@ -169,26 +169,6 @@ describe('Deobfuscator extended', () => {
     assert.ok(readability > 0);
   });
 
-  it('handles LLM analysis success and failure', async () => {
-    const llmOk = {
-      generateDeobfuscationPrompt: (code: string) => [{ role: 'user', content: code }],
-      chat: async () => ({ content: 'analysis ok' }),
-    };
-    const d1 = new Deobfuscator(llmOk as unknown as ConstructorParameters<typeof Deobfuscator>[0]) as unknown as DeobfuscatorHarness;
-    const r1 = await d1.llmAnalysis('code');
-    assert.strictEqual(r1, 'analysis ok');
-
-    const llmFail = {
-      generateDeobfuscationPrompt: () => [{ role: 'user', content: 'x' }],
-      chat: async () => {
-        throw new Error('llm down');
-      },
-    };
-    const d2 = new Deobfuscator(llmFail as unknown as ConstructorParameters<typeof Deobfuscator>[0]) as unknown as DeobfuscatorHarness;
-    const r2 = await d2.llmAnalysis('code');
-    assert.strictEqual(r2, null);
-  });
-
   it('handles runUnpack/runJSVMP/runAdvanced/runASTOptimizer branches', async () => {
     const d = new Deobfuscator() as unknown as DeobfuscatorHarness;
     const ts: Transformation[] = [];
@@ -278,8 +258,6 @@ describe('Deobfuscator extended', () => {
       return `${code}//o`;
     };
     d.renameVariables = async (code: string) => `${code}//r`;
-    d.llm = { chat: async () => ({ content: 'analysis' }) };
-    d.llmAnalysis = async () => 'analysis';
 
     const opts = {
       code: 'const x = 1;',
@@ -287,12 +265,13 @@ describe('Deobfuscator extended', () => {
       aggressive: true,
       astOptimize: true,
       renameVariables: true,
-      llm: true,
     };
 
     const r1 = await d.deobfuscate(opts);
     assert.ok(r1.code.includes('//r'));
-    assert.ok(r1.transformations.length >= 4);
+    // 检测类型为 vm-protection/custom（无 packer），实际推送 3 个 transformation：
+    // jsvmp / advanced / ast-optimize
+    assert.ok(r1.transformations.length >= 3);
     assert.ok(Array.isArray(r1.warnings));
     assert.ok(Array.isArray(r1.unresolvedParts));
 
