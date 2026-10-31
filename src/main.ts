@@ -50,7 +50,7 @@ import {ToolExecutionScheduler} from './utils/ToolExecutionScheduler.js';
 
 // If moved update release-please config
 // x-release-please-start-version
-const VERSION = '3.1.0';
+const VERSION = '3.1.1';
 // x-release-please-end
 
 export const args = parseArguments(VERSION);
