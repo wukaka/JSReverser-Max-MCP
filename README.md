@@ -169,7 +169,7 @@ mkdir -p ~/.claude/skills && ln -s /ABSOLUTE/PATH/JSReverser-Max-MCP/skills/* ~/
 
 <!-- END CAPABILITY TABLE -->
 
-> 注：本服务不内置外部 LLM。`loc_analyze_code` 只返回确定性骨架（AST 结构、数据流、模式、复杂度、加密/弱算法规则检测、代码片段）；`understand` / `summarize` 的语义归纳、`deobfuscate` 解不了的 VMP/JSFuck 还原，均由主模型在工具输出基础上自行完成。
+> 注：`loc_analyze_code` 只返回确定性骨架（AST 结构、数据流、模式、复杂度、加密/弱算法规则检测、代码片段）；`understand` / `summarize` 的语义归纳、`deobfuscate` 解不了的 VMP/JSFuck 还原，均由主模型在工具输出基础上自行完成。
 >
 - 完整参数说明见 [docs/reference/tool-reference.md](docs/reference/tool-reference.md)。
 - 按逆向流程选工具可继续看 [docs/reference/reverse-workflow.md](docs/reference/reverse-workflow.md)。
