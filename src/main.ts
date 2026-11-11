@@ -93,6 +93,7 @@ async function getContext(): Promise<McpContext> {
     wsEndpoint: args.wsEndpoint ?? autoConnectTarget?.wsEndpoint,
     wsHeaders: args.wsHeaders,
     devtools,
+    viewport: args.viewport,
   });
 
   if (context?.browser !== browser) {

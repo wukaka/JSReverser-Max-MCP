@@ -112,7 +112,7 @@ export const cliOptions = {
   viewport: {
     type: 'string',
     describe:
-      'Initial viewport size for the Chrome instances started by the server. For example, `1280x720`. In headless mode, max size is 3840x2160px.',
+      'Viewport size applied to browser pages, including attached Chrome instances. For example, `1280x720`.',
     coerce: (arg: string | undefined) => {
       if (arg === undefined) {
         return;

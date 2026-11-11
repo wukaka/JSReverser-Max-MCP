@@ -48,6 +48,10 @@ export async function ensureBrowserConnected(options: {
   wsEndpoint?: string;
   wsHeaders?: Record<string, string>;
   devtools: boolean;
+  viewport?: {
+    width: number;
+    height: number;
+  };
 }) {
   // Use BrowserManager for connection management
   const config: BrowserManagerConfig = {
@@ -55,6 +59,7 @@ export async function ensureBrowserConnected(options: {
     wsEndpoint: options.wsEndpoint,
     wsHeaders: options.wsHeaders,
     devtools: options.devtools,
+    viewport: options.viewport,
   };
 
   const manager = BrowserManager.getInstance(config);
@@ -325,7 +330,14 @@ export class BrowserManager {
 
       const connectOptions: Parameters<typeof puppeteer.connect>[0] = {
         targetFilter: makeTargetFilter(),
-        defaultViewport: null,
+        defaultViewport: this.config.viewport
+          ? {
+              width: this.config.viewport.width,
+              height: this.config.viewport.height,
+              deviceScaleFactor: 1,
+              isMobile: false,
+            }
+          : null,
       };
 
       if (this.config.wsEndpoint) {
