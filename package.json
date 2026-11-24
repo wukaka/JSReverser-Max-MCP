@@ -1,6 +1,6 @@
 {
   "name": "jsreverser-max-mcp",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "description": "MCP server for JavaScript reverse engineering and debugging",
   "type": "module",
   "bin": "./build/src/index.js",
