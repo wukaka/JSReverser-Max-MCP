@@ -354,6 +354,23 @@ export class BrowserManager {
       this.browser = await puppeteer.connect(connectOptions);
       logger('Connected to remote browser');
 
+      // defaultViewport 只作用于新建页；连接时已存在的 tab 需显式施加视口。
+      if (this.config.viewport) {
+        const {width, height} = this.config.viewport;
+        for (const page of await this.browser.pages()) {
+          try {
+            await page.setViewport({
+              width,
+              height,
+              deviceScaleFactor: 1,
+              isMobile: false,
+            });
+          } catch (error) {
+            logger('Failed to apply viewport to existing page:', (error as Error).message);
+          }
+        }
+      }
+
       // Set up crash detection
       this.setupCrashDetection();
 
